@@ -1,0 +1,12 @@
+====== TODO list ======
+
+1) Add solvers of level set equations
+2) Add more memory-efficient data structures for level set functions
+3) Add levelset class based on the Grid but having information about domain
+4) Add Grid  operations - Interface, Reflection, FillIn, Raw
+5) Add iterators on grids
+6) Get rid of raw math vectors in LinearInterpolator and some other classes
+7) Add support of openvdb data format
+8) Add support of Field3D data format
+9) Add a makefile for tests
+10) Add build/usag documentatione 

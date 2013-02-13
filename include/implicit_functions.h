@@ -342,24 +342,6 @@ typedef boost::shared_ptr<const IImplicitFunctionF> IImplicitFunctionFPtr;
 typedef std::vector<IImplicitFunctionFPtr> FunctionsF;
 typedef typename FunctionsF::const_iterator FIteratorF;
 
-/**
- * TODO Make it inherit from ILevelsetFunction
- * operations on levelset functions
- */
-inline double lsUnion(double a, double b)
-{
-  return std::min(a, b);
-}
-
-inline double lsIntersection(double a, double b)
-{
-  return std::max(a, b);
-}
-
-inline double lsDifference(double a, double b)
-{
-  return std::max(a, -b);
-}
 }
 
 #endif /* IMPLICITFUNCTIONS_H_ */
