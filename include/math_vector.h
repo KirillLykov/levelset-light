@@ -22,8 +22,8 @@ namespace geometry_utils
 
     MathVector();
     explicit MathVector(const T data[Dim]);
-    MathVector(const MathVector& toCopy);
-    MathVector& operator= (const MathVector& toCopy);
+    MathVector(const MathVector<T, Dim>& toCopy);
+    MathVector<T, Dim>& operator= (const MathVector<T, Dim>& toCopy);
     ~MathVector();
 
     double getLength() const;
@@ -35,7 +35,7 @@ namespace geometry_utils
     T getCoord(size_t index) const;
 
   private:
-    T data_[Dim];
+    T m_data[Dim];
   };
 
   // Dim == 2
@@ -232,19 +232,19 @@ namespace geometry_utils
   template<class T, size_t Dim>
   MathVector<T,Dim>::MathVector()
   {
-    memset(&data_, 0, sizeof(T) * Dim);
+    memset(&m_data, 0, sizeof(T) * Dim);
   }
 
   template<class T, size_t Dim>
   MathVector<T,Dim>::MathVector(const T data[Dim])
   {
-    memcpy(data_, data, sizeof(T)*Dim);
+    memcpy(m_data, data, sizeof(T)*Dim);
   }
 
   template<class T, size_t Dim>
   MathVector<T,Dim>::MathVector(const MathVector<T,Dim>& toCopy)
   {
-    memcpy(data_, toCopy.data_, sizeof(T) * Dim);
+    memcpy(m_data, toCopy.m_data, sizeof(T) * Dim);
   }
 
   template<class T, size_t Dim>
@@ -253,7 +253,7 @@ namespace geometry_utils
     if (this == &toCopy)
         return *this;
 
-    memcpy(data_, toCopy.data_, sizeof(T)*Dim);
+    memcpy(m_data, toCopy.m_data, sizeof(T)*Dim);
 
     return *this;
   }
@@ -262,14 +262,14 @@ namespace geometry_utils
   void MathVector<T,Dim>::setCoord(size_t index, T val)
   {
     assert(index < Dim);
-    data_[index] = val;
+    m_data[index] = val;
   }
 
   template<class T, size_t Dim>
   T MathVector<T,Dim>::getCoord(size_t index) const
   {
     assert(index < Dim);
-    return data_[index];
+    return m_data[index];
   }
 
   template<class T, size_t Dim>
@@ -277,7 +277,7 @@ namespace geometry_utils
   {
     double result = 0.0;
     for (size_t i = 0; i < Dim; ++i)
-        result += data_[i] * data_[i];
+        result += m_data[i] * m_data[i];
 
     return sqrt(result);
   }

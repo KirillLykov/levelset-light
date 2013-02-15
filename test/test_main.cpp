@@ -25,6 +25,8 @@
 
 #include "test_implicit_functions.cpp"
 
+#include "test_grid_operations.cpp"
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
