@@ -7,9 +7,8 @@
 #include <iostream>
 #include <random> //c++11
 #include "linear_interpolator.h"
+#include "basic_access_strategy.h"
 
-#include <linear_interpolator.h>
-#include <basic_access_strategy.h>
 typedef ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > _BasicLinInterpolator;
 
 using namespace ls;

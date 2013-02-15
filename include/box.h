@@ -118,9 +118,12 @@ namespace geometry_utils
 
     bool inside(const MathVector3D& point) const
     {
-      if (point.getX() >= low.getX() && point.getX() <= top.getX()
-       && point.getY() >= low.getY() && point.getY() <= top.getY()
-       && point.getZ() >= low.getZ() && point.getZ() <= top.getZ())
+      if (point.getX() >= low.getX() - Tolerance::globalTolerance
+       && point.getX() <= top.getX() + Tolerance::globalTolerance
+       && point.getY() >= low.getY() - Tolerance::globalTolerance
+       && point.getY() <= top.getY() + Tolerance::globalTolerance
+       && point.getZ() >= low.getZ() - Tolerance::globalTolerance
+       && point.getZ() <= top.getZ() + Tolerance::globalTolerance)
         return true;
       return false;
     }

@@ -3,8 +3,12 @@
 // Distributed under the FreeBSD Software License (See accompanying file license.txt)
 
 #include <gtest/gtest.h>
+#include <random> //c++11
+#include "tolerance.h"
 #include "grid_operations.h"
 #include "implicit_functions.h"
+#include "linear_interpolator.h"
+#include "basic_access_strategy.h"
 
 using namespace ls;
 using namespace geometry_utils;
@@ -69,4 +73,36 @@ TEST(GridOperations, FillInGrid)
     }
   }
 }
+#include <iostream>
 
+TEST(GridOperations, CoarsenGrid)
+{
+  Close_absolut close_at_absolut(10e-12);
+  size_t rndPointsCount = 10;
+
+  size_t n = 20, m = 25, w = 30;
+  IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
+  FillInGrid fill(func);
+
+  Grid3D<double> grid(n, m, w);
+  Box domain(10.0, 20.0, 30.0);
+  fill.run(grid, domain);
+
+  CoarsenGrid cg(20, 20, 20);
+
+  Grid3D<double> outGrid = grid;
+  cg.run(outGrid, domain);
+
+  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOriginal(domain, grid);
+  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOut(domain, outGrid);
+
+  std::default_random_engine generator;
+  std::uniform_real_distribution<double> distribution1(domain.getLow().getX(), domain.getTop().getX());
+  std::uniform_real_distribution<double> distribution2(-domain.getLow().getY(), domain.getTop().getY());
+  std::uniform_real_distribution<double> distribution3(-domain.getLow().getZ(), domain.getTop().getZ());
+
+  for (size_t i = 0; i < rndPointsCount; ++i) {
+    MathVector3D point(distribution1(generator), distribution2(generator), distribution3(generator));
+    EXPECT_TRUE( close_at_absolut(liOriginal.compute(point), liOut.compute(point)) );
+  }
+}
