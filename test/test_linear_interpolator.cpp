@@ -22,19 +22,19 @@ namespace
 {
   const size_t rndPointsCount = 10;
 
-  double nonSumFunciton(const double* p)
+  double nonSumFunciton(const MathVector3D& p)
   {
-    return p[0] + p[1] * p[1] + p[2] * p[2] * p[2];
+    return p.getX() + p.getY() * p.getY() + p.getZ() * p.getZ() * p.getZ();
   }
 
-  double nonSumFunciton2(const double* p)
+  double nonSumFunciton2(const MathVector3D& p)
   {
-    return 1.0 + p[0] + sin(p[1])  + log( fabs(p[2]) + 1.0);
+    return 1.0 + p.getX() + sin(p.getY())  + log( fabs(p.getZ()) + 1.0);
   }
 
-  double computeError(const double* h)
+  double computeError(const MathVector3D& h)
   {
-    return raw_math_vector::length(h) / 15.0; //just random coefficient which works for some reason
+    return h.getLength() / 15.0; //just random coefficient which works for some reason
   }
 }
 
@@ -165,8 +165,8 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        double p[] = {i * h[0], j * h[1], k * h[2]};
-        raw_math_vector::add(p, box.getLow());
+        MathVector3D p(i * h[0], j * h[1], k * h[2]);
+        p += box.getLow();
         assert(box.inside(p));
         grid(i, j, k) = nonSumFunciton2(p);
       }
@@ -179,17 +179,17 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        double p[] = {i * h[0], j * h[1], k * h[2]};
-        raw_math_vector::add(p, box.getLow());
+        MathVector3D p(i * h[0], j * h[1], k * h[2]);
+        p += box.getLow();
         EXPECT_TRUE( fabs(li.run(p) - grid(i, j, k)) < tolerance );
       }
     }
   }
 
   std::default_random_engine generator;
-  std::uniform_real_distribution<double> distribution1(box.getLow()[0], box.getTop()[0]);
-  std::uniform_real_distribution<double> distribution2(-box.getLow()[1], box.getTop()[1]);
-  std::uniform_real_distribution<double> distribution3(-box.getLow()[2], box.getTop()[2]);
+  std::uniform_real_distribution<double> distribution1(box.getLow().getX(), box.getTop().getX());
+  std::uniform_real_distribution<double> distribution2(-box.getLow().getY(), box.getTop().getY());
+  std::uniform_real_distribution<double> distribution3(-box.getLow().getZ(), box.getTop().getZ());
 
   double error = raw_math_vector::length(h);
 

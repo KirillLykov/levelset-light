@@ -73,9 +73,10 @@ public:
         img->AllocateScalars();
         img->SetSpacing(m_bbox.getSizeX()/(_AS::m_grid.size(0) - 1), m_bbox.getSizeY()/(_AS::m_grid.size(1) - 1),
             m_bbox.getSizeZ()/(_AS::m_grid.size(2) - 1));
-        double origin[3];
+        MathVector3D origin;
         m_bbox.getCenter(origin);
-        img->SetOrigin(origin);
+        double rawOrigin[] = {origin.getX(), origin.getY(), origin.getZ()};
+        img->SetOrigin(rawOrigin);
 
         for (size_t iz = 0; iz < _AS::m_grid.size(2); ++iz)
           for (size_t iy = 0; iy < _AS::m_grid.size(1); ++iy)

@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <math.h>
 #include <assert.h>
-#include "raw_math_vector.h"
+#include "math_vector.h"
 #include "tolerance.h"
 
 namespace ls
@@ -18,14 +18,12 @@ namespace geometry_utils
 {
   class Box
   {
-    double low[3];
-    double top[3];
+    MathVector3D low;
+    MathVector3D top;
   public:
 
     Box()
     {
-      raw_math_vector::zero(low);
-      raw_math_vector::zero(top);
     }
 
     /**
@@ -35,8 +33,8 @@ namespace geometry_utils
     {
       double half = domainSz / 2.0;
       for (size_t i = 0; i < 3; ++i) {
-        low[i] = -half;
-        top[i] = half;
+        low.setCoord(i, -half);
+        top.setCoord(i, half);
       }
     }
 
@@ -47,8 +45,8 @@ namespace geometry_utils
     {
       for (size_t i = 0; i < 3; ++i) {
         double half = domainSz[i] / 2.0;
-        low[i] = -half;
-        top[i] = half;
+        low.setCoord(i, -half);
+        top.setCoord(i, half);
       }
     }
 
@@ -57,23 +55,23 @@ namespace geometry_utils
       double domainSz[] = {domainSzX, domainSzY, domainSzZ};
       for (size_t i = 0; i < 3; ++i) {
         double half = domainSz[i] / 2.0;
-        low[i] = -half;
-        top[i] = half;
+        low.setCoord(i, -half);
+        top.setCoord(i, half);
       }
     }
 
-    Box(const double* low, const double* top)
+    Box(const MathVector3D& low, const MathVector3D& top)
     {
-      if (low[0] > top[0] || low[1] >= top[1] || low[2] >= top[2])
+      if (low.getX() > top.getX() || low.getY() >= top.getY() || low.getZ() >= top.getZ())
         throw std::logic_error("low must be bottomLeft point, while top - upper right");
-      raw_math_vector::copy(this->low, low);
-      raw_math_vector::copy(this->top, top);
+      this->low = low;
+      this->top = top;
     }
 
     Box(const Box& anotherBox)
     {
-      raw_math_vector::copy(this->low, anotherBox.low);
-      raw_math_vector::copy(this->top, anotherBox.top);
+      this->low = anotherBox.low;
+      this->top = anotherBox.top;
     }
 
     Box& operator= (const Box& anotherBox)
@@ -81,8 +79,8 @@ namespace geometry_utils
       if (this == &anotherBox)
         return *this;
 
-      raw_math_vector::copy(this->low, anotherBox.low);
-      raw_math_vector::copy(this->top, anotherBox.top);
+      this->low = anotherBox.low;
+      this->top = anotherBox.top;
 
       return *this;
     }
@@ -90,7 +88,7 @@ namespace geometry_utils
     double getIthSize(size_t i) const
     {
       assert(i < 3);
-      return fabs(top[i] - low[i]);
+      return fabs(top.getCoord(i) - low.getCoord(i));
     }
 
     double getSizeX() const
@@ -110,17 +108,27 @@ namespace geometry_utils
 
     bool inside(const double* point) const
     {
-      if (point[0] >= low[0] && point[0] <= top[0]
-       && point[1] >= low[1] && point[1] <= top[1]
-       && point[2] >= low[2] && point[2] <= top[2])
+      if (point[0] >= low.getX() && point[0] <= top.getX()
+       && point[1] >= low.getY() && point[1] <= top.getY()
+       && point[2] >= low.getZ() && point[2] <= top.getZ())
         return true;
       return false;
     }
 
-    void getCenter(double* center) const
+
+    bool inside(const MathVector3D& point) const
+    {
+      if (point.getX() >= low.getX() && point.getX() <= top.getX()
+       && point.getY() >= low.getY() && point.getY() <= top.getY()
+       && point.getZ() >= low.getZ() && point.getZ() <= top.getZ())
+        return true;
+      return false;
+    }
+
+    void getCenter(MathVector3D& center) const
     {
       for (size_t i =0 ; i < 3; ++i)
-        center[i] = 0.5 * (top[i] + low[i]);
+        center.setCoord(i, 0.5 * (top.getCoord(i) + low.getCoord(i)));
     }
 
     double getVolume() const
@@ -128,10 +136,10 @@ namespace geometry_utils
       return getSizeX() * getSizeY() * getSizeZ();
     }
 
-    void shift(double* newOrigin)
+    void shift(const MathVector3D& newOrigin)
     {
-      raw_math_vector::add(low, newOrigin);
-      raw_math_vector::add(top, newOrigin);
+      low += newOrigin;
+      top += newOrigin;
     }
 
     double getMaxSize() const
@@ -144,29 +152,27 @@ namespace geometry_utils
      */
     bool isTrivial() const
     {
-      //TODO use tolerance
-      return getVolume() == 0.0;
+      return Tolerance::close(getVolume(), 0.0);
     }
 
     //unsafe functions because a user can try to modify internal data
-    const double* getLow() const
+    MathVector3D getLow() const
     {
       return low;
     }
 
-    const double* getTop() const
+    MathVector3D getTop() const
     {
       return top;
     }
 
     bool operator==(const Box& anotherBox) const
     {
-      double diff[3];
-      raw_math_vector::substract(diff, this->low, anotherBox.low);
-      double difflow = raw_math_vector::length(diff);
+      MathVector3D diff = this->low - anotherBox.low;
+      double difflow = diff.getLength();
 
-      raw_math_vector::substract(diff, this->top, anotherBox.top);
-      double difftop = raw_math_vector::length(diff);
+      diff = this->top - anotherBox.top;
+      double difftop = diff.getLength();
 
       if (difflow < Tolerance::globalTolerance && difftop < Tolerance::globalTolerance)
         return true;

@@ -23,14 +23,14 @@ using namespace geometry_utils;
 
 namespace
 {
-  double testFunction1(const double* point) {
+  double testFunction1(const MathVector3D& point) {
     double r = 0.5;
-    double res = sqrt(pow(point[0], 2) + pow(point[1], 2) ) - r;
+    double res = sqrt(pow(point.getX(), 2) + pow(point.getY(), 2) ) - r;
     return res;
   }
 
-  double testFunction2(const double* point) {
-    double res = sin(point[0]) + cos(point[1]) - log(fabs(point[3])) / (point[3] + 1.0);
+  double testFunction2(const MathVector3D& point) {
+    double res = sin(point.getX()) + cos(point.getY()) - log(fabs(point.getZ())) / (point.getZ() + 1.0);
     return res;
   }
 }
@@ -97,8 +97,8 @@ TEST(HDF5Test, writeAndRead3)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        double p[] = {i * h[0], j * h[1], k * h[2]};
-        raw_math_vector::add(p, box.getLow());
+        MathVector3D p(i * h[0], j * h[1], k * h[2]);
+        p += box.getLow();
         assert(box.inside(p));
         grid(i, j, k) = testFunction2(p);
       }

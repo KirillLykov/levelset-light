@@ -146,7 +146,7 @@ public:
     void writeMetadata(const hsize_t* dims) const
     {
       std::stringstream ss;
-      double bboxCenter[3];
+      geometry_utils::MathVector3D bboxCenter;
       m_bbox.getCenter(bboxCenter);
 
       //Note, that z and x are swapped for xdmf
@@ -160,7 +160,7 @@ public:
                   dims[0] << " "<< dims[1] << " " << dims[2] << "\"/>\n" <<
           "     <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n"  <<
           "       <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"  <<
-          "        " << bboxCenter[0] << " " << bboxCenter[1] << " " << bboxCenter[2] << "\n" <<
+          "        " << bboxCenter.getX() << " " << bboxCenter.getY() << " " << bboxCenter.getZ() << "\n" <<
           "       </DataItem>\n"  <<
           "       <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"  <<
           "        " << m_bbox.getIthSize(0) / dims[0] << " " << m_bbox.getIthSize(1) / dims[1] << " " << m_bbox.getIthSize(2) / dims[2]  << "\n" <<

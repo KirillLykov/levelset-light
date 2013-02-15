@@ -36,25 +36,23 @@ namespace ls
       return run(point);
     }
 
-    void computeIndex(const double* relativePosition, size_t* index) const
+    void computeIndex(const geometry_utils::MathVector3D& relativePosition, size_t* index) const
     {
-      assert(relativePosition[0] >= 0.0 && relativePosition[1] >= 0.0 && relativePosition[2] >= 0.0);
+      assert(relativePosition.getX() >= 0.0 && relativePosition.getY() >= 0.0 && relativePosition.getZ() >= 0.0);
       // index_x = floor( p_x / h_x )
       for (size_t i = 0; i < 3; ++i) {
         // coef := 1 / h
         double coef = (_AS::m_grid.size(i) - 1.0) / static_cast<double>(m_bbox.getIthSize(i));
-        index[i] = _AS::mapIndex( static_cast<int>(relativePosition[i] * coef), i );
+        index[i] = _AS::mapIndex( static_cast<int>(relativePosition.getCoord(i) * coef), i );
       }
     }
 
-    double run(const double* point) const
+    double run(const geometry_utils::MathVector3D& point) const
     {
       // work with Cartesian with origin in left bottom point of the domain
       // thus shift the input point. Then fin index of the cell where the point is.
       // After that interpolate function value for the point.
-      double relativePosition[3];
-      geometry_utils::raw_math_vector::copy(relativePosition, point);
-      geometry_utils::raw_math_vector::substract(relativePosition, m_bbox.getLow());
+      geometry_utils::MathVector3D relativePosition = point - m_bbox.getLow();
 
       size_t index[3];
       computeIndex(relativePosition, index);
@@ -68,23 +66,22 @@ namespace ls
       * Interpolate using trilinear interpolation method
       * names of variables are from http://en.wikipedia.org/wiki/Trilinear_interpolation
       */
-     double trilin_interp(const double* inputPoint, const size_t* index) const
+     double trilin_interp(const geometry_utils::MathVector3D& inputPoint, const size_t* index) const
      {
-       double x0[] = {index[0] * h[0], index[1] * h[1], index[2] * h[2]};
-       double xd[3];
-       geometry_utils::raw_math_vector::substract(xd, inputPoint, x0);
+       geometry_utils::MathVector3D x0(index[0] * h[0], index[1] * h[1], index[2] * h[2]);
+       geometry_utils::MathVector3D xd = inputPoint - x0;
        double c[2][2];
        for (size_t i = 0; i < 2; ++i) {
          for (size_t j = 0; j < 2; ++j) {
-           c[i][j] = _AS::getValue(index[0], index[1] + i, index[2] + j) * (h[0] - xd[0]) +
-               _AS::getValue(index[0] + 1, index[1] + i, index[2] + j) * xd[0];
+           c[i][j] = _AS::getValue(index[0], index[1] + i, index[2] + j) * (h[0] - xd.getX()) +
+               _AS::getValue(index[0] + 1, index[1] + i, index[2] + j) * xd.getX();
          }
        }
 
-       double c0 = c[0][0] * (h[1] - xd[1]) + c[1][0] * xd[1];
-       double c1 = c[0][1] * (h[1] - xd[1]) + c[1][1] * xd[1];
+       double c0 = c[0][0] * (h[1] - xd.getY()) + c[1][0] * xd.getY();
+       double c1 = c[0][1] * (h[1] - xd.getY()) + c[1][1] * xd.getY();
 
-       double res = 1.0 / h[0] / h[1] / h[2] * (c0 * (h[2] - xd[2]) + c1 * xd[2]);
+       double res = 1.0 / h[0] / h[1] / h[2] * (c0 * (h[2] - xd.getZ()) + c1 * xd.getZ());
        return res;
      }
   };

@@ -48,9 +48,9 @@ TEST(BoxTest, box)
   EXPECT_EQ(5.6, box.getSizeX());
   EXPECT_EQ(10.0, box.getSizeY());
   EXPECT_EQ(21.0, box.getSizeZ());
-  double center[3];
+  MathVector3D center;
   box.getCenter(center);
-  EXPECT_EQ(0.0, center[0]);
-  EXPECT_EQ(0.0, center[1]);
-  EXPECT_EQ(0.0, center[2]);
+  EXPECT_EQ(0.0, center.getX());
+  EXPECT_EQ(0.0, center.getY());
+  EXPECT_EQ(0.0, center.getZ());
 }

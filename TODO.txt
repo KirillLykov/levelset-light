@@ -9,4 +9,5 @@
 7) Add support of openvdb data format
 8) Add support of Field3D data format
 9) Add a makefile for tests
-10) Add build/usag documentatione 
+10) Add build/usag documentatione
+11) Extend grid to work with any structure (not just primitive types)

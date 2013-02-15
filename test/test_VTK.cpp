@@ -104,8 +104,8 @@ TEST(VTKTest, writeAndRead3)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        double p[] = {i * h[0], j * h[1], k * h[2]};
-        raw_math_vector::add(p, box.getLow());
+        MathVector3D p(i * h[0], j * h[1], k * h[2]);
+        p += box.getLow();
         assert(box.inside(p));
         grid(i, j, k) = testFunction2(p);
       }
