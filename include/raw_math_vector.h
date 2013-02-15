@@ -7,6 +7,7 @@
 
 #include <math.h>
 #include <memory.h>
+#include "tolerance.h"
 
 namespace ls
 {
@@ -21,11 +22,9 @@ namespace geometry_utils
    */
   namespace raw_math_vector
   {
-    static const double linearTolerance = 1e-6; //TODO use tolerance from tolerance class
-
     inline bool isEqualLinear(double left, double right)
     {
-      return fabs(left - right) < linearTolerance;
+      return Tolerance::close(left, right);
     }
 
     inline void copy(double* targetVector, const double* sourceVector)

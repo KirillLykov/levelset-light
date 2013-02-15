@@ -60,13 +60,13 @@ TEST(InterpolatorTest, trivialCubicGrid)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        EXPECT_TRUE( fabs(li.run(i * h - 0.5, j * h - 0.5, k * h - 0.5) - grid(i, j, k)) < tolerance );
+        EXPECT_TRUE( fabs(li.compute(i * h - 0.5, j * h - 0.5, k * h - 0.5) - grid(i, j, k)) < tolerance );
       }
     }
   }
 
-  EXPECT_TRUE( fabs(li.run(0.0, 0.0, 0.0)) < tolerance );
-  EXPECT_TRUE( fabs(li.run(0.25, 0.25, 0.25) + 0.5) < tolerance );
+  EXPECT_TRUE( fabs(li.compute(0.0, 0.0, 0.0)) < tolerance );
+  EXPECT_TRUE( fabs(li.compute(0.25, 0.25, 0.25) + 0.5) < tolerance );
 }
 
 TEST(InterpolatorTest, diffentStepLength)
@@ -88,13 +88,13 @@ TEST(InterpolatorTest, diffentStepLength)
   _BasicLinInterpolator li(box, grid);
 
   double error = computeError(h);
-  EXPECT_TRUE( fabs(li.run(0.0, 0.0, 0.0)) < error );
+  EXPECT_TRUE( fabs(li.compute(0.0, 0.0, 0.0)) < error );
 
   //check that interpolation at known points are as defined in the grid
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        EXPECT_TRUE( fabs(li.run(i * h[0] - 0.5, j * h[1] - 0.5, k * h[2] - 0.5) - grid(i, j, k)) < tolerance );
+        EXPECT_TRUE( fabs(li.compute(i * h[0] - 0.5, j * h[1] - 0.5, k * h[2] - 0.5) - grid(i, j, k)) < tolerance );
       }
     }
   }
@@ -104,7 +104,7 @@ TEST(InterpolatorTest, diffentStepLength)
 
   for (size_t i = 0; i < rndPointsCount; ++i) {
     double p[] = {distribution(generator), distribution(generator), distribution(generator)};
-    EXPECT_TRUE( fabs(li.run(p) - nonSumFunciton(p)) < error );
+    EXPECT_TRUE( fabs(li.compute(p) - nonSumFunciton(p)) < error );
   }
 }
 
@@ -135,7 +135,7 @@ TEST(InterpolatorTest, cuboidGrid)
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
         double p[] = {i * h[0] - shift[0], j * h[1] - shift[1], k * h[2] - shift[2]};
-        EXPECT_TRUE( fabs(li.run(p) - grid(i, j, k)) < tolerance );
+        EXPECT_TRUE( fabs(li.compute(p) - grid(i, j, k)) < tolerance );
       }
     }
   }
@@ -147,7 +147,7 @@ TEST(InterpolatorTest, cuboidGrid)
 
   for (size_t i = 0; i < rndPointsCount; ++i) {
     double p[] = {distribution(generator), distribution(generator), distribution(generator)};
-    EXPECT_TRUE( fabs(li.run(p) - nonSumFunciton2(p)) < error );
+    EXPECT_TRUE( fabs(li.compute(p) - nonSumFunciton2(p)) < error );
   }
 }
 
@@ -181,7 +181,7 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
       for (size_t k = 0; k < w; ++k) {
         MathVector3D p(i * h[0], j * h[1], k * h[2]);
         p += box.getLow();
-        EXPECT_TRUE( fabs(li.run(p) - grid(i, j, k)) < tolerance );
+        EXPECT_TRUE( fabs(li.compute(p) - grid(i, j, k)) < tolerance );
       }
     }
   }
@@ -195,7 +195,7 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
 
   for (size_t i = 0; i < rndPointsCount; ++i) {
     double p[] = {distribution1(generator), distribution2(generator), distribution3(generator)};
-    EXPECT_TRUE( fabs(li.run(p) - nonSumFunciton2(p)) < error );
+    EXPECT_TRUE( fabs(li.compute(p) - nonSumFunciton2(p)) < error );
   }
 }
 
@@ -239,7 +239,7 @@ TEST(InterpolatorTest, periodicAccessStrategy)
   double sideLength[] = {3.0, 4.0, 5.0};
   Box box(sideLength);
 
-  size_t n = 5, m = 6, w = 7;
+  size_t n = 15, m = 16, w = 17;
 
   double h[] = {sideLength[0] / (n - 1.0), sideLength[1] / (m - 1.0), sideLength[2] / (w - 1.0)};
   double shift[3] = {box.getIthSize(0) / 2.0, box.getIthSize(1) / 2.0, box.getIthSize(2) / 2.0};
@@ -248,8 +248,8 @@ TEST(InterpolatorTest, periodicAccessStrategy)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        double p[] = {i * h[0] - shift[0], j * h[1] - shift[1], k * h[2] - shift[2]};
-        grid(i, j, k) = p[0] + p[1] + p[2]; //TODO check why it doesn't work with nonsymFunciton2
+        MathVector3D p(i * h[0] - shift[0], j * h[1] - shift[1], k * h[2] - shift[2]);
+        grid(i, j, k) = p.getX() + p.getY() + p.getZ(); //TODO check why it doesn't work with nonSumFunciton2(p)
       }
     }
   }
@@ -260,23 +260,23 @@ TEST(InterpolatorTest, periodicAccessStrategy)
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
-        double p[] = {i * h[0] - shift[0], j * h[1] - shift[1], k * h[2] - shift[2]};
-        if (fabs(li.run(p) - grid(i, j, k)) > tolerance)
-          std::cout << "("<<i <<", "<< j<<", "<< k << "): " << li.run(p) << " " << grid(i, j, k) << std::endl;
-        EXPECT_TRUE( fabs(li.run(p) - grid(i, j, k)) < tolerance );
+        MathVector3D p(i * h[0] - shift[0], j * h[1] - shift[1], k * h[2] - shift[2]);
+        if (fabs(li.compute(p) - grid(i, j, k)) > tolerance)
+          std::cout << "("<<i <<", "<< j<<", "<< k << "): " << li.compute(p) << " " << grid(i, j, k) << std::endl;
+        EXPECT_TRUE( fabs(li.compute(p) - grid(i, j, k)) < tolerance );
       }
     }
   }
 
   std::default_random_engine generator;
   std::uniform_real_distribution<double> distribution(-0.5, 0.5);
-  /*
+/*
   double error = computeError(h);
 
   for (size_t i = 0; i < rndPointsCount; ++i) {
     double p[] = {distribution(generator), distribution(generator), distribution(generator)};
-    EXPECT_TRUE( fabs(li.run(p) - nonSumFunciton2(p)) < error );
+    EXPECT_TRUE( fabs(li.compute(p) - nonSumFunciton2(p)) < error );
   }
-  */
+*/
 }
 

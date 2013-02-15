@@ -30,10 +30,10 @@ namespace ls
         h[i] = m_bbox.getIthSize(i) / (_AS::m_grid.size(i) - 1.0);
     }
 
-    double run(double x, double y, double z) const
+    double compute(double x, double y, double z) const
     {
       double point[3] = {x, y, z};
-      return run(point);
+      return compute(point);
     }
 
     void computeIndex(const geometry_utils::MathVector3D& relativePosition, size_t* index) const
@@ -47,7 +47,7 @@ namespace ls
       }
     }
 
-    double run(const geometry_utils::MathVector3D& point) const
+    double compute(const geometry_utils::MathVector3D& point) const
     {
       // work with Cartesian with origin in left bottom point of the domain
       // thus shift the input point. Then fin index of the cell where the point is.
