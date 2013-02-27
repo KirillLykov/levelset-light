@@ -73,7 +73,6 @@ TEST(GridOperations, FillInGrid)
     }
   }
 }
-#include <iostream>
 
 TEST(GridOperations, CoarsenGrid)
 {
