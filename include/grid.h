@@ -211,6 +211,7 @@ namespace ls
   public:
 
     typedef Grid3D<T, allocator> _TGrid;
+    typedef T _DataType;
 
     Grid3D()
       : m_n1(0), m_n2(0), m_n3(0)

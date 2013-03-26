@@ -45,6 +45,7 @@ public:
     typedef typename DeserializerTraits::Representation Representation;
 
     typedef AccessStrategy _AS;
+    typedef typename _AS::_Grid::_DataType _DataType;
 
     const std::string m_fileName;
     geometry_utils::Box& m_domain;

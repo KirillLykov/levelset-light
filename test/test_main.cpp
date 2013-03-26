@@ -19,6 +19,8 @@
 
 #include "test_vtk.cpp"
 
+#include "test_vdb.cpp"
+
 #include "test_geometry_utils.cpp"
 
 #include "test_linear_interpolator.cpp"

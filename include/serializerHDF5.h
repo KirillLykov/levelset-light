@@ -69,7 +69,7 @@ public:
     {
       try
       {
-        Exception::dontPrint();
+        H5::Exception::dontPrint();
         H5File file(m_fullFileName, H5F_ACC_TRUNC);
 
         DSetCreatPropList plist;
