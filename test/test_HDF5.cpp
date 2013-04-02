@@ -21,20 +21,6 @@ using namespace geometry_utils;
 
 #include <gtest/gtest.h>
 
-namespace
-{
-  double testFunction1(const MathVector3D& point) {
-    double r = 0.5;
-    double res = sqrt(pow(point.getX(), 2) + pow(point.getY(), 2) ) - r;
-    return res;
-  }
-
-  double testFunction2(const MathVector3D& point) {
-    double res = sin(point.getX()) + cos(point.getY()) - log(fabs(point.getZ())) / (point.getZ() + 1.0);
-    return res;
-  }
-}
-
 TEST(HDF5Test, writeAndRead1)
 {
   size_t n = 8, m = 8, w = 16;
