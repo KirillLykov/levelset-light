@@ -3,7 +3,6 @@
 1) Add solvers of level set equations
 2) Add more memory-efficient data structures for level set functions
 3) Add levelset class based on the Grid but having information about domain
-4) Add Grid  operations - Interface, Reflection, FillIn, Raw
 5) Add iterators on grids
 9) Add a makefile for tests
 10) Add build/usag documentatione
