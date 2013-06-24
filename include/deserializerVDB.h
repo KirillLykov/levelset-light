@@ -141,4 +141,4 @@ public:
 }
 }
 
-#endif /* HDF5DATASET_H_ */
+#endif

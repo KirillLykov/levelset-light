@@ -25,6 +25,8 @@ template<class Grid, class AccessStrategy = BasicWriteAccessStrategy<double> >
 class GridDeserializerHDF5
 {
 public:
+  GridDeserializerHDF5(Grid& grid, const std::string& fileName)
+  {}
   GridDeserializerHDF5(Grid& grid, const std::string& fileName, const std::string& datasetName)
   {}
   bool run() throw()
@@ -159,4 +161,4 @@ public:
 }
 }
 
-#endif /* HDF5DATASET_H_ */
+#endif

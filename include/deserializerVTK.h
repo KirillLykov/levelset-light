@@ -107,4 +107,4 @@ public:
 }
 
 
-#endif /* DESERIALIZERVTK_H_ */
+#endif
