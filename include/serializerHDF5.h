@@ -12,7 +12,9 @@
 #include <sstream>
 #include <memory.h>
 
+#ifdef USE_HDF5
 #include <H5Cpp.h>
+#endif
 
 #include <grid.h>
 #include <basic_access_strategy.h>
