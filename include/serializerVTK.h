@@ -15,6 +15,7 @@
 #include <grid.h>
 #include <basic_access_strategy.h>
 #include <box.h>
+#include <math_vector.h>
 
 #ifdef USE_VTK
 #include <vtkSmartPointer.h>
@@ -73,7 +74,7 @@ public:
         img->AllocateScalars();
         img->SetSpacing(m_bbox.getSizeX()/(_AS::m_grid.size(0) - 1), m_bbox.getSizeY()/(_AS::m_grid.size(1) - 1),
             m_bbox.getSizeZ()/(_AS::m_grid.size(2) - 1));
-        MathVector3D origin;
+        geometry_utils::MathVector3D origin;
         m_bbox.getCenter(origin);
         double rawOrigin[] = {origin.getX(), origin.getY(), origin.getZ()};
         img->SetOrigin(rawOrigin);

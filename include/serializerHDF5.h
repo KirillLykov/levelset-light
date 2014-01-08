@@ -176,7 +176,7 @@ public:
           "   </Grid>\n"  <<
           " </Domain>\n"  <<
           "</Xdmf>\n";
-      std::ofstream metadataFile(m_metadataFileName);
+      std::ofstream metadataFile(m_metadataFileName.c_str());
       metadataFile << ss.str();
       metadataFile.close();
     }
