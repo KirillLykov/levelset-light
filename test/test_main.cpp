@@ -57,6 +57,17 @@ namespace
 
 int main(int argc, char** argv)
 {
+  /* Not for repo, just to check out some stuff
+  IImplicitFunctionDPtr func( new ls::AxialCylinderD(ls::zDim, 5.0) );
+  FillInGrid fill(func);
+
+  Grid3D<double> grid(32, 32, 64);
+  Box domain(12.0, 12.0, 40.0);
+  fill.run(grid, domain);
+
+  BasicSerializerVTK writer(grid, "test-aux/cylinder5r", domain);
+  writer.run();
+  */
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

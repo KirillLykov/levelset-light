@@ -12,7 +12,6 @@
 
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/Interpolation.h>
-#include <openvdb/tools/GridSampling.h>
 
 #include <grid.h>
 #include <basic_access_strategy.h>
