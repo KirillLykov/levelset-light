@@ -133,7 +133,7 @@ namespace ls
     {
     }
 
-    Grid2D(_size_type n1, _size_type n2, geometry_utils::Box2D box = Box2D())
+    Grid2D(_size_type n1, _size_type n2, geometry_utils::Box2D box = geometry_utils::Box2D())
       : _TGridImpl(n1 * n2), m_n1(n1), m_n2(n2), m_bbox(box)
     {
     }
@@ -211,6 +211,11 @@ namespace ls
     {
       return m_bbox;
     }
+
+    void setBoundingBox(const geometry_utils::Box2D& box)
+    {
+      m_bbox = box;
+    }
   };
 
   template< class T, class allocator = std::allocator<T> >
@@ -232,7 +237,7 @@ namespace ls
     {
     }
 
-    Grid3D(_size_type n1, _size_type n2, _size_type n3, geometry_utils::Box3D box = Box3D())
+    Grid3D(_size_type n1, _size_type n2, _size_type n3, geometry_utils::Box3D box = geometry_utils::Box3D())
       : _TGridImpl(n1 * n2 * n3), m_n1(n1), m_n2(n2), m_n3(n3), m_bbox(box)
     {
     }
@@ -312,6 +317,11 @@ namespace ls
     geometry_utils::Box3D getBoundingBox() const
     {
       return m_bbox;
+    }
+
+    void setBoundingBox(const _TGrid& box)
+    {
+      m_bbox = box;
     }
   };
 }
