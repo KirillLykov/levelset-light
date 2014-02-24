@@ -16,8 +16,7 @@ using namespace geometry_utils;
 TEST(GridOperations, ReflectGrid)
 {
   size_t n = 8, m = 8, w = 16;
-  Box3D originalDomain(10.0, 20.0, 30.0);
-  Grid3D<double> originalGrid(n, m, w, originalDomain);
+  Grid3D<double> originalGrid(n, m, w, Box3D(10.0, 20.0, 30.0));
   double h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -29,15 +28,15 @@ TEST(GridOperations, ReflectGrid)
   }
 
   Grid3D<double> reflectedGrid = originalGrid;
-  Box3D reflecteDomain = originalDomain;
 
   ReflectGrid rg;
-  rg.run(reflectedGrid, reflecteDomain);
+  rg.run(reflectedGrid);
 
   EXPECT_EQ(reflectedGrid.size(0), originalGrid.size(0));
   EXPECT_EQ(reflectedGrid.size(1), originalGrid.size(1));
   EXPECT_EQ(reflectedGrid.size(2), 2 * originalGrid.size(2));
-  EXPECT_EQ(reflecteDomain.getIthSize(2), 2.0 * originalDomain.getIthSize(2));
+  EXPECT_EQ(reflectedGrid.getBoundingBox().getIthSize(2),
+      2.0 * originalGrid.getBoundingBox().getIthSize(2));
 
   size_t center = originalGrid.size(2);
   for (size_t iz = 0; iz < reflectedGrid.size(2); ++iz)
@@ -57,17 +56,18 @@ TEST(GridOperations, FillInGrid)
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
   FillInGrid fill(func);
 
-  Box3D domain(10.0, 20.0, 30.0);
-  Grid3D<double> grid(n, m, w, domain);
-  fill.run(grid, domain);
+  Grid3D<double> grid(n, m, w, Box3D(10.0, 20.0, 30.0));
+  fill.run(grid);
 
-  double h[] = {domain.getSizeX() / (n - 1.0), domain.getSizeY() / (m - 1.0), domain.getSizeZ() / (w - 1.0)};
+  double h[] = {grid.getBoundingBox().getSizeX() / (n - 1.0),
+      grid.getBoundingBox().getSizeY() / (m - 1.0),
+      grid.getBoundingBox().getSizeZ() / (w - 1.0)};
 
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
         MathVector3D point(i * h[0], j * h[1], k * h[2]);
-        point += domain.getLow();
+        point += grid.getBoundingBox().getLow();
         EXPECT_EQ(grid(i, j, k), func->compute(point));
       }
     }
@@ -83,19 +83,19 @@ TEST(GridOperations, CoarsenGrid)
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
   FillInGrid fill(func);
 
-  Box3D domain(10.0, 20.0, 30.0);
-  Grid3D<double> grid(n, m, w, domain);
-  fill.run(grid, domain);
+  Grid3D<double> grid(n, m, w, Box3D(10.0, 20.0, 30.0));
+  fill.run(grid);
 
   CoarsenGrid cg(20, 20, 20);
 
   Grid3D<double> outGrid = grid;
-  cg.run(outGrid, domain);
+  cg.run(outGrid);
 
   ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOriginal(grid);
   ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOut(outGrid);
 
   std::default_random_engine generator;
+  geometry_utils::Box3D domain = grid.getBoundingBox();
   std::uniform_real_distribution<double> distribution1(domain.getLow().getX(), domain.getTop().getX());
   std::uniform_real_distribution<double> distribution2(-domain.getLow().getY(), domain.getTop().getY());
   std::uniform_real_distribution<double> distribution3(-domain.getLow().getZ(), domain.getTop().getZ());

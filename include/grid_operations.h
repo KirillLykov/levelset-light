@@ -21,7 +21,7 @@ namespace ls
   class IGridOperation
   {
   public:
-    virtual void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const = 0;
+    virtual void run(Grid3D<double>& grid) const = 0;
     virtual ~IGridOperation() {}
   };
 
@@ -31,7 +31,7 @@ namespace ls
   class ReflectGrid : public IGridOperation
   {
   public:
-    void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const;
+    void run(Grid3D<double>& grid) const;
   };
 
   /**
@@ -46,7 +46,7 @@ namespace ls
     : m_lsfunc(lsfunc)
     {}
 
-    void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const;
+    void run(Grid3D<double>& grid) const;
   };
 
   /**
@@ -63,14 +63,16 @@ namespace ls
       m_dim[2] = w;
     }
 
-    void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const;
+    void run(Grid3D<double>& grid) const;
   };
 
   // methods bodies
-  void ReflectGrid::run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const
+  void ReflectGrid::run(Grid3D<double>& grid) const
   {
-    Grid3D<double> twiceBiggerGrid(grid.size(0), grid.size(1), 2 * grid.size(2));
-    geometry_utils::Box3D newDomain(domain.getSizeX(), domain.getSizeY(), 2.0 * domain.getSizeZ());
+    geometry_utils::Box3D newDomain(grid.getBoundingBox().getSizeX(),
+        grid.getBoundingBox().getSizeY(),
+        2.0 * grid.getBoundingBox().getSizeZ());
+    Grid3D<double> twiceBiggerGrid(grid.size(0), grid.size(1), 2 * grid.size(2), newDomain);
 
     size_t center = grid.size(2);
     for (size_t iz = 0; iz < twiceBiggerGrid.size(2); ++iz)
@@ -84,44 +86,47 @@ namespace ls
         }
 
     std::swap(twiceBiggerGrid, grid);
-    std::swap(domain, newDomain);
   }
 
-  void FillInGrid::run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const
+  void FillInGrid::run(Grid3D<double>& grid) const
   {
     size_t n = grid.size(0), m = grid.size(1), w = grid.size(2);
 
-    double h[] = {domain.getSizeX() / (n - 1.0), domain.getSizeY() / (m - 1.0), domain.getSizeZ() / (w - 1.0)};
+    double h[] = {grid.getBoundingBox().getSizeX() / (n - 1.0),
+        grid.getBoundingBox().getSizeY() / (m - 1.0),
+        grid.getBoundingBox().getSizeZ() / (w - 1.0)};
 
     for (size_t i = 0; i < n; ++i) {
       for (size_t j = 0; j < m; ++j) {
         for (size_t k = 0; k < w; ++k) {
           geometry_utils::MathVector3D p(i * h[0], j * h[1], k * h[2]);
-          p += domain.getLow();
-          assert(domain.inside(p));
+          p += grid.getBoundingBox().getLow();
+          assert(grid.getBoundingBox().inside(p));
           grid(i, j, k) = m_lsfunc->compute(p);
         }
       }
     }
   }
 
-  void CoarsenGrid::run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const
+  void CoarsenGrid::run(Grid3D<double>& grid) const
   {
     if (grid.size(0) < m_dim[0] || grid.size(1) < m_dim[1] || grid.size(2) < m_dim[2]) {
       throw std::logic_error("at least one of the input grid's dimensions are smaller than output grid dimensions");
     }
 
-    Grid3D<double> outGrid(m_dim[0], m_dim[1], m_dim[2], domain);
+    Grid3D<double> outGrid(m_dim[0], m_dim[1], m_dim[2], grid.getBoundingBox());
     ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > li(grid);
 
-    double h[] = {domain.getSizeX() / (m_dim[0] - 1.0), domain.getSizeY() / (m_dim[1] - 1.0), domain.getSizeZ() / (m_dim[2] - 1.0)};
+    double h[] = {grid.getBoundingBox().getSizeX() / (m_dim[0] - 1.0),
+        grid.getBoundingBox().getSizeY() / (m_dim[1] - 1.0),
+        grid.getBoundingBox().getSizeZ() / (m_dim[2] - 1.0)};
 
     for (size_t i = 0; i < m_dim[0]; ++i) {
       for (size_t j = 0; j < m_dim[1]; ++j) {
         for (size_t k = 0; k < m_dim[2]; ++k) {
           geometry_utils::MathVector3D p(i * h[0], j * h[1], k * h[2]);
-          p += domain.getLow();
-          assert(domain.inside(p));
+          p += grid.getBoundingBox().getLow();
+          assert(grid.getBoundingBox().inside(p));
           outGrid(i, j, k) = li.compute(p);
         }
       }
