@@ -19,12 +19,12 @@ namespace ls
     typedef AccessStrategy<T> _AS;
     typedef typename _AS::_Grid _Grid;
 
-    geometry_utils::Box m_bbox; // bounding box for grid
+    geometry_utils::Box3D m_bbox; // bounding box for grid
     double h[3];
 
   public:
-    LinearInterpolator(const geometry_utils::Box& box, const _Grid& grid)
-    : _AS(grid), m_bbox(box)
+    LinearInterpolator(const _Grid& grid)
+    : _AS(grid), m_bbox(grid.getBoundingBox())
     {
       for (size_t i = 0; i < 3; ++i)
         h[i] = m_bbox.getIthSize(i) / (_AS::m_grid.size(i) - 1.0);

@@ -21,7 +21,7 @@ namespace ls
   class IGridOperation
   {
   public:
-    virtual void run(Grid3D<double>& grid, geometry_utils::Box& domain) const = 0;
+    virtual void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const = 0;
     virtual ~IGridOperation() {}
   };
 
@@ -31,7 +31,7 @@ namespace ls
   class ReflectGrid : public IGridOperation
   {
   public:
-    void run(Grid3D<double>& grid, geometry_utils::Box& domain) const;
+    void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const;
   };
 
   /**
@@ -46,7 +46,7 @@ namespace ls
     : m_lsfunc(lsfunc)
     {}
 
-    void run(Grid3D<double>& grid, geometry_utils::Box& domain) const;
+    void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const;
   };
 
   /**
@@ -63,14 +63,14 @@ namespace ls
       m_dim[2] = w;
     }
 
-    void run(Grid3D<double>& grid, geometry_utils::Box& domain) const;
+    void run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const;
   };
 
   // methods bodies
-  void ReflectGrid::run(Grid3D<double>& grid, geometry_utils::Box& domain) const
+  void ReflectGrid::run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const
   {
     Grid3D<double> twiceBiggerGrid(grid.size(0), grid.size(1), 2 * grid.size(2));
-    geometry_utils::Box newDomain(domain.getSizeX(), domain.getSizeY(), 2.0 * domain.getSizeZ());
+    geometry_utils::Box3D newDomain(domain.getSizeX(), domain.getSizeY(), 2.0 * domain.getSizeZ());
 
     size_t center = grid.size(2);
     for (size_t iz = 0; iz < twiceBiggerGrid.size(2); ++iz)
@@ -87,7 +87,7 @@ namespace ls
     std::swap(domain, newDomain);
   }
 
-  void FillInGrid::run(Grid3D<double>& grid, geometry_utils::Box& domain) const
+  void FillInGrid::run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const
   {
     size_t n = grid.size(0), m = grid.size(1), w = grid.size(2);
 
@@ -105,14 +105,14 @@ namespace ls
     }
   }
 
-  void CoarsenGrid::run(Grid3D<double>& grid, geometry_utils::Box& domain) const
+  void CoarsenGrid::run(Grid3D<double>& grid, geometry_utils::Box3D& domain) const
   {
     if (grid.size(0) < m_dim[0] || grid.size(1) < m_dim[1] || grid.size(2) < m_dim[2]) {
       throw std::logic_error("at least one of the input grid's dimensions are smaller than output grid dimensions");
     }
 
-    Grid3D<double> outGrid(m_dim[0], m_dim[1], m_dim[2]);
-    ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > li(domain, grid);
+    Grid3D<double> outGrid(m_dim[0], m_dim[1], m_dim[2], domain);
+    ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > li(grid);
 
     double h[] = {domain.getSizeX() / (m_dim[0] - 1.0), domain.getSizeY() / (m_dim[1] - 1.0), domain.getSizeZ() / (m_dim[2] - 1.0)};
 

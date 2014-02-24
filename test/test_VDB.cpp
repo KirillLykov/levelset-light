@@ -18,7 +18,7 @@ using namespace geometry_utils;
 TEST(VDBTest, mockup)
 {
   ls::Grid3D<float> outputGrid;
-  ls::geometry_utils::Box lsOutBox;
+  ls::geometry_utils::Box3D lsOutBox;
   ls::io::GridDeserializerVDB< ls::Grid3D<float>, ls::BasicWriteAccessStrategy<float> > vdbReader(outputGrid, "venusstatue", "ls_venus_statue", lsOutBox, 0.5f);
   //EXPECT_TRUE(vdbReader.run());
 }

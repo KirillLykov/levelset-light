@@ -57,7 +57,7 @@ namespace
 
 int main(int argc, char** argv)
 {
-  /* Not for repo, just to check out some stuff
+  /* Not for repo, just to che7ck out some stuff
   IImplicitFunctionDPtr func( new ls::AxialCylinderD(ls::zDim, 5.0) );
   FillInGrid fill(func);
 

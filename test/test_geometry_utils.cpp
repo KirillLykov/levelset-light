@@ -40,11 +40,11 @@ TEST(VectorTest, vector2D)
   EXPECT_EQ(v3 * v2, 1.0);
 }
 
-TEST(BoxTest, box)
+TEST(BoxTest, box3D)
 {
   using namespace geometry_utils;
 
-  Box box(5.6, 10.0, 21.0);
+  Box3D box(5.6, 10.0, 21.0);
   EXPECT_EQ(5.6, box.getSizeX());
   EXPECT_EQ(10.0, box.getSizeY());
   EXPECT_EQ(21.0, box.getSizeZ());
@@ -53,4 +53,17 @@ TEST(BoxTest, box)
   EXPECT_EQ(0.0, center.getX());
   EXPECT_EQ(0.0, center.getY());
   EXPECT_EQ(0.0, center.getZ());
+}
+
+TEST(BoxTest, box2D)
+{
+  using namespace geometry_utils;
+
+  Box2D box(5.6, 10.0);
+  EXPECT_EQ(5.6, box.getSizeX());
+  EXPECT_EQ(10.0, box.getSizeY());
+  MathVector2D center;
+  box.getCenter(center);
+  EXPECT_EQ(0.0, center.getX());
+  EXPECT_EQ(0.0, center.getY());
 }

@@ -16,10 +16,11 @@ namespace ls
 {
 namespace geometry_utils
 {
+  template<class T, size_t Dim>
   class Box
   {
-    MathVector3D low;
-    MathVector3D top;
+    MathVector<T, Dim> low;
+    MathVector<T, Dim> top;
   public:
 
     Box()
@@ -32,7 +33,7 @@ namespace geometry_utils
     Box(double domainSz)
     {
       double half = domainSz / 2.0;
-      for (size_t i = 0; i < 3; ++i) {
+      for (size_t i = 0; i < Dim; ++i) {
         low.setCoord(i, -half);
         top.setCoord(i, half);
       }
@@ -43,38 +44,40 @@ namespace geometry_utils
      */
     Box(const double* domainSz)
     {
-      for (size_t i = 0; i < 3; ++i) {
+      for (size_t i = 0; i < Dim; ++i) {
         double half = domainSz[i] / 2.0;
         low.setCoord(i, -half);
         top.setCoord(i, half);
       }
     }
 
-    Box(double domainSzX, double domainSzY, double domainSzZ)
+    Box(double domainSzX, double domainSzY, double domainSzZ = 0.0)
     {
       double domainSz[] = {domainSzX, domainSzY, domainSzZ};
-      for (size_t i = 0; i < 3; ++i) {
+      for (size_t i = 0; i < Dim; ++i) {
         double half = domainSz[i] / 2.0;
         low.setCoord(i, -half);
         top.setCoord(i, half);
       }
     }
 
-    Box(const MathVector3D& low, const MathVector3D& top)
+    Box(const MathVector<T, Dim>& low, const MathVector<T, Dim>& top)
     {
-      if (low.getX() > top.getX() || low.getY() >= top.getY() || low.getZ() >= top.getZ())
-        throw std::logic_error("low must be bottomLeft point, while top - upper right");
+      for (size_t i = 0; i < Dim; ++i) {
+        if (low.getCoord(i) >= top.getCoord(i))
+          throw std::logic_error("low must be bottomLeft point, while top - upper right");
+      }
       this->low = low;
       this->top = top;
     }
 
-    Box(const Box& anotherBox)
+    Box(const Box<T, Dim>& anotherBox)
     {
       this->low = anotherBox.low;
       this->top = anotherBox.top;
     }
 
-    Box& operator= (const Box& anotherBox)
+    Box<T, Dim>& operator= (const Box<T, Dim>& anotherBox)
     {
       if (this == &anotherBox)
         return *this;
@@ -87,7 +90,7 @@ namespace geometry_utils
 
     double getIthSize(size_t i) const
     {
-      assert(i < 3);
+      assert(i < Dim);
       return fabs(top.getCoord(i) - low.getCoord(i));
     }
 
@@ -115,22 +118,30 @@ namespace geometry_utils
       return false;
     }
 
-
-    bool inside(const MathVector3D& point) const
+    //TODO instead of if use templates like in MathVector
+    bool inside(const MathVector<T, Dim>& point) const
     {
-      if (point.getX() >= low.getX() - Tolerance::globalTolerance
-       && point.getX() <= top.getX() + Tolerance::globalTolerance
-       && point.getY() >= low.getY() - Tolerance::globalTolerance
-       && point.getY() <= top.getY() + Tolerance::globalTolerance
-       && point.getZ() >= low.getZ() - Tolerance::globalTolerance
-       && point.getZ() <= top.getZ() + Tolerance::globalTolerance)
-        return true;
+      if (Dim == 3) {
+        if (point.getX() >= low.getX() - Tolerance::globalTolerance
+         && point.getX() <= top.getX() + Tolerance::globalTolerance
+         && point.getY() >= low.getY() - Tolerance::globalTolerance
+         && point.getY() <= top.getY() + Tolerance::globalTolerance
+         && point.getZ() >= low.getZ() - Tolerance::globalTolerance
+         && point.getZ() <= top.getZ() + Tolerance::globalTolerance)
+          return true;
+      } else {
+        if (point.getX() >= low.getX() - Tolerance::globalTolerance
+         && point.getX() <= top.getX() + Tolerance::globalTolerance
+         && point.getY() >= low.getY() - Tolerance::globalTolerance
+         && point.getY() <= top.getY() + Tolerance::globalTolerance)
+          return true;
+      }
       return false;
     }
 
-    void getCenter(MathVector3D& center) const
+    void getCenter(MathVector<T, Dim>& center) const
     {
-      for (size_t i =0 ; i < 3; ++i)
+      for (size_t i =0 ; i < Dim; ++i)
         center.setCoord(i, 0.5 * (top.getCoord(i) + low.getCoord(i)));
     }
 
@@ -139,7 +150,7 @@ namespace geometry_utils
       return getSizeX() * getSizeY() * getSizeZ();
     }
 
-    void shift(const MathVector3D& newOrigin)
+    void shift(const MathVector<T, Dim>& newOrigin)
     {
       low += newOrigin;
       top += newOrigin;
@@ -147,7 +158,8 @@ namespace geometry_utils
 
     double getMaxSize() const
     {
-      return std::max(getSizeX(), std::max(getSizeY(), getSizeZ()));
+      return Dim == 3 ? std::max(getSizeX(), std::max(getSizeY(), getSizeZ())) :
+          std::max(getSizeX(), getSizeY());
     }
 
     /**
@@ -159,19 +171,19 @@ namespace geometry_utils
     }
 
     //unsafe functions because a user can try to modify internal data
-    MathVector3D getLow() const
+    MathVector<T, Dim> getLow() const
     {
       return low;
     }
 
-    MathVector3D getTop() const
+    MathVector<T, Dim> getTop() const
     {
       return top;
     }
 
-    bool operator==(const Box& anotherBox) const
+    bool operator==(const Box<T, Dim>& anotherBox) const
     {
-      MathVector3D diff = this->low - anotherBox.low;
+      MathVector<T, Dim> diff = this->low - anotherBox.low;
       double difflow = diff.getLength();
 
       diff = this->top - anotherBox.top;
@@ -182,11 +194,14 @@ namespace geometry_utils
       return false;
     }
 
-    bool operator!=(const Box& anotherBox) const
+    bool operator!=(const Box<T, Dim>& anotherBox) const
     {
       return !(*this == anotherBox);
     }
   };
+
+  typedef Box<double, 2> Box2D;
+  typedef Box<double, 3> Box3D;
 }
 }
 

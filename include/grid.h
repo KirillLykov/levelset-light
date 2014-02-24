@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <assert.h>
 #include "exceptions.h"
+#include "box.h"
 
 namespace ls
 {
@@ -122,6 +123,7 @@ namespace ls
     typedef typename allocator::reference _reference;
     typedef typename allocator::const_reference _const_reference;
     _size_type m_n1, m_n2;
+    geometry_utils::Box2D m_bbox;
   public:
 
     typedef Grid2D<T, allocator> _TGrid;
@@ -131,13 +133,13 @@ namespace ls
     {
     }
 
-    Grid2D(_size_type n1, _size_type n2)
-      : _TGridImpl(n1 * n2), m_n1(n1), m_n2(n2)
+    Grid2D(_size_type n1, _size_type n2, geometry_utils::Box2D box = Box2D())
+      : _TGridImpl(n1 * n2), m_n1(n1), m_n2(n2), m_bbox(box)
     {
     }
 
     Grid2D(const _TGrid& another)
-      : _TGridImpl(another), m_n1(another.m_n1), m_n2(another.m_n2)
+      : _TGridImpl(another), m_n1(another.m_n1), m_n2(another.m_n2), m_bbox(another.m_bbox)
     {
     }
 
@@ -149,6 +151,7 @@ namespace ls
       if (m_n1 != another.m_n1 || m_n2 != another.m_n2)
         throw array_size_error("grids in the assignment must have the same sizes");
 
+      m_bbox = another.m_bbox;
       _TGridImpl::operator= (another);
 
       return *this;
@@ -158,6 +161,10 @@ namespace ls
     {
       if (m_n1 != another.m_n1 || m_n2 != another.m_n2)
         throw array_size_error("logical operators on grids may be applied only to grids having the same sizes");
+
+      if (m_bbox != another.m_bbox) {
+        return false; // if domains bounding boxes are different
+      }
 
       return _TGridImpl::operator== (another);
     }
@@ -184,6 +191,7 @@ namespace ls
       _TGridImpl::swap(another);
       std::swap(m_n1, another.m_n1);
       std::swap(m_n2, another.m_n2);
+      std::swap(m_bbox, another.m_bbox);
     }
 
     _size_type size(_size_type index) const
@@ -198,6 +206,11 @@ namespace ls
       m_n2 = n2;
       _TGridImpl::resize(n1 * n2);
     }
+
+    geometry_utils::Box2D getBoundingBox() const
+    {
+      return m_bbox;
+    }
   };
 
   template< class T, class allocator = std::allocator<T> >
@@ -208,6 +221,7 @@ namespace ls
     typedef typename allocator::reference _reference;
     typedef typename allocator::const_reference _const_reference;
     _size_type m_n1, m_n2, m_n3;
+    geometry_utils::Box3D m_bbox;
   public:
 
     typedef Grid3D<T, allocator> _TGrid;
@@ -218,13 +232,14 @@ namespace ls
     {
     }
 
-    Grid3D(_size_type n1, _size_type n2, _size_type n3)
-      : _TGridImpl(n1 * n2 * n3), m_n1(n1), m_n2(n2), m_n3(n3)
+    Grid3D(_size_type n1, _size_type n2, _size_type n3, geometry_utils::Box3D box = Box3D())
+      : _TGridImpl(n1 * n2 * n3), m_n1(n1), m_n2(n2), m_n3(n3), m_bbox(box)
     {
     }
 
     Grid3D(const _TGrid& another)
-      :  _TGridImpl(another), m_n1(another.m_n1), m_n2(another.m_n2), m_n3(another.m_n3)
+      :  _TGridImpl(another), m_n1(another.m_n1), m_n2(another.m_n2),
+         m_n3(another.m_n3), m_bbox(another.m_bbox)
     {
     }
 
@@ -236,6 +251,7 @@ namespace ls
       if (m_n1 != another.m_n1 || m_n2 != another.m_n2 || m_n3 != another.m_n3)
         throw array_size_error("grids in the assignment must have the same sizes");
 
+      m_bbox = another.m_bbox;
       _TGridImpl::operator= (another);
 
       return *this;
@@ -245,6 +261,10 @@ namespace ls
     {
       if (m_n1 != another.m_n1 || m_n2 != another.m_n2 || m_n3 != another.m_n3)
         throw array_size_error("logical operators on grids may be applied only to grids having the same sizes");
+
+      if (m_bbox != another.m_bbox) {
+        return false; // if domains bounding boxes are different
+      }
 
       return _TGridImpl::operator== (another);
     }
@@ -272,6 +292,7 @@ namespace ls
       std::swap(m_n1, another.m_n1);
       std::swap(m_n2, another.m_n2);
       std::swap(m_n3, another.m_n3);
+      std::swap(m_bbox, another.m_bbox);
     }
 
     _size_type size(_size_type index) const
@@ -286,6 +307,11 @@ namespace ls
       m_n2 = n2;
       m_n3 = n3;
       _TGridImpl::resize(n1 * n2 * n3);
+    }
+
+    geometry_utils::Box3D getBoundingBox() const
+    {
+      return m_bbox;
     }
   };
 }

@@ -28,43 +28,40 @@ TEST(TwoDGridTest, size)
   Grid2D<double> grid(n, m);
   EXPECT_EQ(grid.size(0), n);
   EXPECT_EQ(grid.size(1), m);
-  try {
+  ASSERT_THROW({
     grid.size(99);
-  }
-  catch (const std::out_of_range& er)
-  {
-    return;
-  }
-  EXPECT_TRUE(false);
+  }, std::out_of_range);
 }
 
 TEST(TwoDGridTest, copyConstruction)
 {
-  Grid2D<double> grid1(1, 2);
+  Grid2D<double> grid1(1, 2, geometry_utils::Box2D(1.0, 5.0));
   Grid2D<double> grid2(grid1);
   EXPECT_EQ(grid1, grid2);
 }
 
 TEST(TwoDGridTest, assignment)
 {
-  Grid2D<double> grid1(1, 2);
+  Grid2D<double> grid1(1, 2, geometry_utils::Box2D(1.0, 5.0));
   Grid2D<double> grid2(1, 2);
   grid2 = grid1;
   EXPECT_EQ(grid1, grid2);
+}
+
+TEST(TwoDGridTest, notEqual2d)
+{
+  Grid2D<double> grid1(1, 2, geometry_utils::Box2D(1.0, 5.0));
+  Grid2D<double> grid2(1, 2, geometry_utils::Box2D(0.0, 4.0));
+  EXPECT_NE(grid1, grid2);
 }
 
 TEST(TwoDGridTest, assignmentBrake)
 {
   Grid2D<double> grid1(1, 2);
   Grid2D<double> grid2(2, 3);
-  try {
+  ASSERT_THROW({
     grid2 = grid1;
-  }
-  catch (const array_size_error& er)
-  {
-    return;
-  }
-  EXPECT_TRUE(false);
+  }, array_size_error);
 }
 
 TEST(TwoDGridTest, access)
@@ -168,43 +165,39 @@ TEST(ThreeDGridTest, size)
   EXPECT_EQ(grid.size(0), n);
   EXPECT_EQ(grid.size(1), m);
   EXPECT_EQ(grid.size(2), w);
-  try {
+  ASSERT_THROW({
     grid.size(99);
-  }
-  catch (const std::out_of_range& er)
-  {
-    return;
-  }
-  EXPECT_TRUE(false);
+  }, std::out_of_range);
 }
 
 TEST(ThreeDGridTest, copyConstruction)
 {
-  Grid3D<double> grid1(1, 2, 3);
+  Grid3D<double> grid1(1, 2, 3, geometry_utils::Box3D(1.0, 2.0, 3.0));
   Grid3D<double> grid2(grid1);
   EXPECT_EQ(grid1, grid2);
 }
 
 TEST(ThreeDGridTest, assignment)
 {
-  Grid3D<double> grid1(2, 2, 3);
+  Grid3D<double> grid1(2, 2, 3, geometry_utils::Box3D(1.0, 2.0, 3.0));
   Grid3D<double> grid2(2, 2, 3);
   grid2 = grid1;
   EXPECT_EQ(grid1, grid2);
+}
+
+TEST(TwoDGridTest, notEqual3d)
+{
+  Grid3D<double> grid1(1, 2, 3, geometry_utils::Box3D(1.0, 2.0, 7.0));
+  Grid3D<double> grid2(1, 2, 3, geometry_utils::Box3D(1.0, 2.0, 6.0));
+  EXPECT_NE(grid1, grid2);
 }
 
 TEST(ThreeDGridTest, assignmentBrake)
 {
   Grid3D<double> grid1(1, 2, 5);
   Grid3D<double> grid2(2, 3, 4);
-  try {
-    grid2 = grid1;
-  }
-  catch (const array_size_error& er)
-  {
-    return;
-  }
-  EXPECT_TRUE(false);
+  ASSERT_THROW({
+    grid2 = grid1;}, array_size_error);
 }
 
 TEST(ThreeDGridTest, access)

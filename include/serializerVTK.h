@@ -51,12 +51,12 @@ public:
     typedef AccessStrategy _AS;
 
     const std::string m_fullFileName;
-    const geometry_utils::Box m_bbox; // bounding box for the grid
+    const geometry_utils::Box3D m_bbox; // bounding box for the grid
 
   public:
 
     GridSerializerVTK(const Grid& grid, const std::string& fullFileName,
-        const geometry_utils::Box& box = geometry_utils::Box(1.0))
+        const geometry_utils::Box3D& box = geometry_utils::Box3D(1.0))
     : _AS(grid), m_fullFileName(fullFileName + std::string(".vti")), m_bbox(box)
     {
     }

@@ -39,12 +39,12 @@ namespace
 
 TEST(InterpolatorTest, trivialCubicGrid)
 {
-  Box box(1.0);
+  Box3D box(1.0);
 
   double h = 1.0;
 
   size_t n = 2, m = 2, w = 2;
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, box);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -53,7 +53,7 @@ TEST(InterpolatorTest, trivialCubicGrid)
     }
   }
 
-  _BasicLinInterpolator li(box, grid);
+  _BasicLinInterpolator li(grid);
 
   //check that interpolation at known points are as defined in the grid
   for (size_t i = 0; i < n; ++i) {
@@ -70,11 +70,11 @@ TEST(InterpolatorTest, trivialCubicGrid)
 
 TEST(InterpolatorTest, diffentStepLength)
 {
-  Box box(1.0);
+  Box3D box(1.0);
   size_t n = 10, m = 12, w = 14;
   double h[] = {1.0 / (n - 1.0), 1.0 / (m - 1.0), 1.0 / (w - 1.0)};
 
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, box);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -84,7 +84,7 @@ TEST(InterpolatorTest, diffentStepLength)
     }
   }
 
-  _BasicLinInterpolator li(box, grid);
+  _BasicLinInterpolator li(grid);
 
   double error = computeError(h);
   EXPECT_TRUE( fabs(li.compute(0.0, 0.0, 0.0)) < error );
@@ -110,14 +110,14 @@ TEST(InterpolatorTest, diffentStepLength)
 TEST(InterpolatorTest, cuboidGrid)
 {
   double sideLength[] = {3.0, 4.0, 5.0};
-  Box box(sideLength);
+  Box3D box(sideLength);
 
   size_t n = 5, m = 6, w = 7;
 
   double h[] = {sideLength[0] / (n - 1.0), sideLength[1] / (m - 1.0), sideLength[2] / (w - 1.0)};
   double shift[3] = {box.getIthSize(0) / 2.0, box.getIthSize(1) / 2.0, box.getIthSize(2) / 2.0};
 
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, box);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -127,7 +127,7 @@ TEST(InterpolatorTest, cuboidGrid)
     }
   }
 
-  _BasicLinInterpolator li(box, grid);
+  _BasicLinInterpolator li(grid);
 
   //check that interpolation at known points are as defined in the grid
   for (size_t i = 0; i < n; ++i) {
@@ -154,13 +154,13 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
 {
   double top[] = {4.0, 5.0, 9.0};
   double low[] = {-3.0, -4.0, -5.0};
-  Box box(low, top);
+  Box3D box(low, top);
 
   size_t n = 5, m = 6, w = 7;
 
   double h[] = {box.getSizeX() / (n - 1.0), box.getSizeY() / (m - 1.0), box.getSizeZ() / (w - 1.0)};
 
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, box);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -172,7 +172,7 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
     }
   }
 
-  _BasicLinInterpolator li(box, grid);
+  _BasicLinInterpolator li(grid);
 
   //check that interpolation at known points are as defined in the grid
   for (size_t i = 0; i < n; ++i) {
@@ -236,14 +236,14 @@ protected:
 TEST(InterpolatorTest, periodicAccessStrategy)
 {
   double sideLength[] = {3.0, 4.0, 5.0};
-  Box box(sideLength);
+  Box3D box(sideLength);
 
   size_t n = 15, m = 16, w = 17;
 
   double h[] = {sideLength[0] / (n - 1.0), sideLength[1] / (m - 1.0), sideLength[2] / (w - 1.0)};
   double shift[3] = {box.getIthSize(0) / 2.0, box.getIthSize(1) / 2.0, box.getIthSize(2) / 2.0};
 
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, box);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -253,7 +253,7 @@ TEST(InterpolatorTest, periodicAccessStrategy)
     }
   }
 
-  ls::LinearInterpolator< double, PeriodicReadAS > li(box, grid);
+  ls::LinearInterpolator< double, PeriodicReadAS > li(grid);
 
   //check that interpolation at known points are as defined in the grid
   for (size_t i = 0; i < n; ++i) {

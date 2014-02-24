@@ -16,8 +16,8 @@ using namespace geometry_utils;
 TEST(GridOperations, ReflectGrid)
 {
   size_t n = 8, m = 8, w = 16;
-  Grid3D<double> originalGrid(n, m, w);
-  Box originalDomain(10.0, 20.0, 30.0);
+  Box3D originalDomain(10.0, 20.0, 30.0);
+  Grid3D<double> originalGrid(n, m, w, originalDomain);
   double h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -29,7 +29,7 @@ TEST(GridOperations, ReflectGrid)
   }
 
   Grid3D<double> reflectedGrid = originalGrid;
-  Box reflecteDomain = originalDomain;
+  Box3D reflecteDomain = originalDomain;
 
   ReflectGrid rg;
   rg.run(reflectedGrid, reflecteDomain);
@@ -57,8 +57,8 @@ TEST(GridOperations, FillInGrid)
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
   FillInGrid fill(func);
 
-  Grid3D<double> grid(n, m, w);
-  Box domain(10.0, 20.0, 30.0);
+  Box3D domain(10.0, 20.0, 30.0);
+  Grid3D<double> grid(n, m, w, domain);
   fill.run(grid, domain);
 
   double h[] = {domain.getSizeX() / (n - 1.0), domain.getSizeY() / (m - 1.0), domain.getSizeZ() / (w - 1.0)};
@@ -83,8 +83,8 @@ TEST(GridOperations, CoarsenGrid)
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
   FillInGrid fill(func);
 
-  Grid3D<double> grid(n, m, w);
-  Box domain(10.0, 20.0, 30.0);
+  Box3D domain(10.0, 20.0, 30.0);
+  Grid3D<double> grid(n, m, w, domain);
   fill.run(grid, domain);
 
   CoarsenGrid cg(20, 20, 20);
@@ -92,8 +92,8 @@ TEST(GridOperations, CoarsenGrid)
   Grid3D<double> outGrid = grid;
   cg.run(outGrid, domain);
 
-  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOriginal(domain, grid);
-  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOut(domain, outGrid);
+  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOriginal(grid);
+  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOut(outGrid);
 
   std::default_random_engine generator;
   std::uniform_real_distribution<double> distribution1(domain.getLow().getX(), domain.getTop().getX());

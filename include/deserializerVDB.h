@@ -47,7 +47,7 @@ public:
     const std::string m_fileName;
     const std::string m_datasetName;
 
-    geometry_utils::Box& m_domain;
+    geometry_utils::Box3D& m_domain;
     _DataType m_coarsenCoeff; // used because usually vdb meshes are too big when transformed to ls
 
   public:
@@ -57,7 +57,7 @@ public:
     {
     }
 
-    GridDeserializerVDB(Grid& grid, const std::string& fileName, const std::string& datasetName, geometry_utils::Box& domain, _DataType coarsenCoeff = 1.0)
+    GridDeserializerVDB(Grid& grid, const std::string& fileName, const std::string& datasetName, geometry_utils::Box3D& domain, _DataType coarsenCoeff = 1.0)
     : _AS(grid), m_fileName(fileName + std::string(".vdb")), m_datasetName(datasetName), m_domain(domain), m_coarsenCoeff(coarsenCoeff)
     {
     }
@@ -130,9 +130,9 @@ public:
       return ls::geometry_utils::MathVector3D(inputVector.asPointer());
     }
 
-    ls::geometry_utils::Box vdbBox2lsBox(const openvdb::BBoxd& inputBox)
+    ls::geometry_utils::Box3D vdbBox2lsBox(const openvdb::BBoxd& inputBox)
     {
-      return ls::geometry_utils::Box(vdbVector2lsVector(inputBox.min()), vdbVector2lsVector(inputBox.max()));
+      return ls::geometry_utils::Box3D(vdbVector2lsVector(inputBox.min()), vdbVector2lsVector(inputBox.max()));
     }
   };
 #endif

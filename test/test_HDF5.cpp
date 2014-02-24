@@ -24,7 +24,7 @@ using namespace geometry_utils;
 TEST(HDF5Test, writeAndRead1)
 {
   size_t n = 8, m = 8, w = 16;
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, Box3D());
   double h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -48,7 +48,7 @@ TEST(HDF5Test, writeAndRead1)
 TEST(HDF5Test, writeAndRead2)
 {
   size_t n = 10, m = 12, w = 14;
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, Box3D());
   double h = 10.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -73,11 +73,11 @@ TEST(HDF5Test, writeAndRead2)
 TEST(HDF5Test, writeAndRead3)
 {
   size_t n = 12, m = 11, w = 14;
-  Grid3D<double> grid(n, m, w);
+  Grid3D<double> grid(n, m, w, Box3D());
 
   double top[] = {4.0, 5.0, 9.0};
   double low[] = {-3.0, -4.0, -5.0};
-  Box box(low, top);
+  Box3D box(low, top);
   double h[] = {box.getSizeX() / (n - 1.0), box.getSizeY() / (m - 1.0), box.getSizeZ() / (w - 1.0)};
 
   for (size_t i = 0; i < n; ++i) {

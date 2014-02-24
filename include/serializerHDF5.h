@@ -52,7 +52,7 @@ public:
     const std::string m_fullFileName;
     const std::string m_metadataFileName; //used by paraview
     const std::string m_datasetName;
-    const geometry_utils::Box m_bbox; // bounding box for the grid, by default it is origin centerd 1x1x1
+    const geometry_utils::Box3D m_bbox; // bounding box for the grid, by default it is origin centerd 1x1x1
 
     static const hsize_t m_rank = 3;
 
@@ -60,7 +60,7 @@ public:
 
     GridSerializerHDF5(const Grid& grid, const std::string& fullFileName,
         const std::string& datasetName,
-        const geometry_utils::Box& box = geometry_utils::Box(1.0))
+        const geometry_utils::Box3D& box = geometry_utils::Box3D(1.0))
     : _AS(grid), m_fullFileName(fullFileName + std::string(".h5")),
       m_metadataFileName(fullFileName + ".xmf"), m_datasetName(datasetName),
       m_bbox(box)

@@ -50,7 +50,7 @@ TEST(VTKTest, writeAndRead1)
   Close_relative close_at_tol(10e-8); // for whatever reason vtk writes with error
 
   size_t n = 8, m = 8, w = 8;
-  Box domainWrite(1.0, 1.0, 1.0);
+  Box3D domainWrite(1.0, 1.0, 1.0);
   Grid3D<double> grid(n, m, w);
   double h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
@@ -66,7 +66,7 @@ TEST(VTKTest, writeAndRead1)
   EXPECT_TRUE(writer.run());
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  Box domainRead;
+  Box3D domainRead;
   BasicDeserializerVTK reader(readGrid, "test-aux/writeAndRead1", domainRead);
   EXPECT_TRUE(reader.run());
 
@@ -98,7 +98,7 @@ TEST(VTKTest, writeAndRead3)
 
   double top[] = {4.0, 5.0, 9.0};
   double low[] = {-3.0, -4.0, -5.0};
-  Box box(low, top);
+  Box3D box(low, top);
   double h[] = {box.getSizeX() / (n - 1.0), box.getSizeY() / (m - 1.0), box.getSizeZ() / (w - 1.0)};
 
   for (size_t i = 0; i < n; ++i) {
@@ -116,7 +116,7 @@ TEST(VTKTest, writeAndRead3)
   writer.run();
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  Box domainRead;
+  Box3D domainRead;
   BasicDeserializerVTK reader(readGrid, "test-aux/writeAndRead3", domainRead);
   reader.run();
 
@@ -141,7 +141,7 @@ TEST(VTKTest, writeAndRead_SPoints)
   Close_relative close_at_tol(10e-6); // for whatever reason structured point have this tolerance
 
   size_t n = 8, m = 8, w = 8;
-  Box domainWrite(1.0, 1.0, 1.0);
+  Box3D domainWrite(1.0, 1.0, 1.0);
   Grid3D<double> grid(n, m, w);
   double h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
@@ -157,7 +157,7 @@ TEST(VTKTest, writeAndRead_SPoints)
   EXPECT_TRUE(writer.run());
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  Box domainRead;
+  Box3D domainRead;
   BasicDeserializerVTK_SPoint reader(readGrid, "test-aux/writeAndRead3", domainRead);
   EXPECT_TRUE(reader.run());
 
