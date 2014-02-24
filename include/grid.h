@@ -319,7 +319,7 @@ namespace ls
       return m_bbox;
     }
 
-    void setBoundingBox(const _TGrid& box)
+    void setBoundingBox(const geometry_utils::Box3D& box)
     {
       m_bbox = box;
     }
