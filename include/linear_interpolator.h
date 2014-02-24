@@ -32,7 +32,7 @@ namespace ls
 
     double compute(double x, double y, double z) const
     {
-      double point[3] = {x, y, z};
+      geometry_utils::MathVector3D point(x, y, z);
       return compute(point);
     }
 
@@ -49,6 +49,8 @@ namespace ls
 
     double compute(const geometry_utils::MathVector3D& point) const
     {
+      assert(m_bbox.inside(point));
+
       // work with Cartesian with origin in left bottom point of the domain
       // thus shift the input point. Then fin index of the cell where the point is.
       // After that interpolate function value for the point.
