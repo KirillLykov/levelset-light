@@ -62,15 +62,15 @@ TEST(VTKTest, writeAndRead1)
     }
   }
 
-  BasicSerializerVTK writer(grid, "test-aux/writeAndRead1", domainWrite);
+  grid.setBoundingBox(domainWrite);
+  BasicSerializerVTK writer(grid, "test-aux/writeAndRead1");
   EXPECT_TRUE(writer.run());
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  Box3D domainRead;
-  BasicDeserializerVTK reader(readGrid, "test-aux/writeAndRead1", domainRead);
+  BasicDeserializerVTK reader(readGrid, "test-aux/writeAndRead1");
   EXPECT_TRUE(reader.run());
 
-  EXPECT_EQ(domainWrite, domainRead);
+  EXPECT_EQ(grid.getBoundingBox(), readGrid.getBoundingBox());
 
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -112,15 +112,15 @@ TEST(VTKTest, writeAndRead3)
     }
   }
 
-  BasicSerializerVTK writer(grid, "test-aux/writeAndRead3", box);
+  grid.setBoundingBox(box);
+  BasicSerializerVTK writer(grid, "test-aux/writeAndRead3");
   writer.run();
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  Box3D domainRead;
-  BasicDeserializerVTK reader(readGrid, "test-aux/writeAndRead3", domainRead);
+  BasicDeserializerVTK reader(readGrid, "test-aux/writeAndRead3");
   reader.run();
 
-  EXPECT_EQ(box, domainRead);
+  EXPECT_EQ(grid.getBoundingBox(), readGrid.getBoundingBox());
 
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -153,12 +153,12 @@ TEST(VTKTest, writeAndRead_SPoints)
     }
   }
 
-  BasicSerializerVTK_SPoint writer(grid, "test-aux/writeAndRead3", domainWrite);
+  grid.setBoundingBox(domainWrite);
+  BasicSerializerVTK_SPoint writer(grid, "test-aux/writeAndRead3");
   EXPECT_TRUE(writer.run());
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  Box3D domainRead;
-  BasicDeserializerVTK_SPoint reader(readGrid, "test-aux/writeAndRead3", domainRead);
+  BasicDeserializerVTK_SPoint reader(readGrid, "test-aux/writeAndRead3");
   EXPECT_TRUE(reader.run());
 
   //EXPECT_EQ(domainWrite, domainRead); check with tolerance

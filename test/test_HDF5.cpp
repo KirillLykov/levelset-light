@@ -91,7 +91,7 @@ TEST(HDF5Test, writeAndRead3)
     }
   }
 
-  BasicSerializerHDF5 writer(grid, "test-aux/writeAndRead3", "data", box);
+  BasicSerializerHDF5 writer(grid, "test-aux/writeAndRead3", "data");
   writer.run();
 
   Grid3D<double> readGrid; // at this point I don't know the size

@@ -55,9 +55,8 @@ public:
 
   public:
 
-    GridSerializerVTK(const Grid& grid, const std::string& fullFileName,
-        const geometry_utils::Box3D& box = geometry_utils::Box3D(1.0))
-    : _AS(grid), m_fullFileName(fullFileName + std::string(".vti")), m_bbox(box)
+    GridSerializerVTK(const Grid& grid, const std::string& fullFileName)
+    : _AS(grid), m_fullFileName(fullFileName + std::string(".vti")), m_bbox(grid.getBoundingBox())
     {
     }
 

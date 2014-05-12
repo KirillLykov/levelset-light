@@ -47,18 +47,17 @@ public:
     const std::string m_fileName;
     const std::string m_datasetName;
 
-    geometry_utils::Box3D& m_domain;
     _DataType m_coarsenCoeff; // used because usually vdb meshes are too big when transformed to ls
 
   public:
 
     GridDeserializerVDB(Grid& grid, const std::string& fileName)
-    : _AS(grid), m_fileName(fileName + std::string(".vdb")), m_datasetName("data"), m_domain(1.0) ,m_coarsenCoeff(1.0)
+    : _AS(grid), m_fileName(fileName + std::string(".vdb")), m_datasetName("data"), m_coarsenCoeff(1.0)
     {
     }
 
-    GridDeserializerVDB(Grid& grid, const std::string& fileName, const std::string& datasetName, geometry_utils::Box3D& domain, _DataType coarsenCoeff = 1.0)
-    : _AS(grid), m_fileName(fileName + std::string(".vdb")), m_datasetName(datasetName), m_domain(domain), m_coarsenCoeff(coarsenCoeff)
+    GridDeserializerVDB(Grid& grid, const std::string& fileName, const std::string& datasetName, _DataType coarsenCoeff = 1.0)
+    : _AS(grid), m_fileName(fileName + std::string(".vdb")), m_datasetName(datasetName), m_coarsenCoeff(coarsenCoeff)
     {
     }
 
@@ -99,7 +98,8 @@ public:
 
         // set in output grid size and bounding box
         _AS::m_grid.resize(dimsOut.x(), dimsOut.y(), dimsOut.z());
-        m_domain = vdbBox2lsBox(box);
+        Box3D domain = vdbBox2lsBox(box);
+        _AS::m_grid.setBoundingBox(domain);
 
         for (size_t i = 0; i < dimsOut.x(); ++i) {
           for (size_t j = 0; j < dimsOut.y(); ++j) {

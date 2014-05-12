@@ -59,11 +59,10 @@ public:
   public:
 
     GridSerializerHDF5(const Grid& grid, const std::string& fullFileName,
-        const std::string& datasetName,
-        const geometry_utils::Box3D& box = geometry_utils::Box3D(1.0))
+        const std::string& datasetName)
     : _AS(grid), m_fullFileName(fullFileName + std::string(".h5")),
       m_metadataFileName(fullFileName + ".xmf"), m_datasetName(datasetName),
-      m_bbox(box)
+      m_bbox(grid.getBoundingBox())
     {
     }
 

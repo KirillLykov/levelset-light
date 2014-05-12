@@ -48,12 +48,11 @@ public:
     typedef typename _AS::_Grid::_DataType _DataType;
 
     const std::string m_fileName;
-    geometry_utils::Box3D& m_domain;
 
   public:
 
-    GridDeserializerVTK(Grid& grid, const std::string& fileName, geometry_utils::Box3D& domain)
-    : _AS(grid), m_fileName(fileName + std::string(".vti")), m_domain(domain)
+    GridDeserializerVTK(Grid& grid, const std::string& fileName)
+    : _AS(grid), m_fileName(fileName + std::string(".vti"))
     {
     }
 
@@ -83,7 +82,7 @@ public:
         }
 
         geometry_utils::Box3D newDomain(bottom, top);
-        std::swap(m_domain, newDomain);
+        _AS::m_grid.setBoundingBox(newDomain);
 
         for (size_t iz = 0; iz < _AS::m_grid.size(2); ++iz)
           for (size_t iy = 0; iy < _AS::m_grid.size(1); ++iy)
