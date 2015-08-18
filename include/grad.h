@@ -1,9 +1,9 @@
-//  (C) Copyright Kirill Lykov 2012.
+//  (C) Copyright Kirill Lykov 2015.
 //
 // Distributed under the FreeBSD Software License (See accompanying file license.txt)
 
-#ifndef LINEAR_INTERPOLATOR_H_
-#define LINEAR_INTERPOLATOR_H_
+#ifndef GRAD_H_
+#define GRAD_H_
 
 #include <cstddef>
 #include <algorithm>
@@ -14,7 +14,7 @@
 namespace ls
 {
   template < typename T, template<typename X>  class AccessStrategy >
-  class LinearInterpolator : public AccessStrategy<T>
+  class Grad : public AccessStrategy<T>
   {
     typedef AccessStrategy<T> _AS;
     typedef typename _AS::_Grid _Grid;
@@ -23,7 +23,7 @@ namespace ls
     double h[3];
 
   public:
-    LinearInterpolator(const _Grid& grid)
+    Grad(const _Grid& grid)
     : _AS(grid), m_bbox(grid.getBoundingBox())
     {
       for (size_t i = 0; i < 3; ++i)
@@ -47,46 +47,45 @@ namespace ls
       }
     }
 
-    double compute(const geometry_utils::MathVector3D& point) const
+    geometry_utils::MathVector3D compute_forward(const geometry_utils::MathVector3D& point) const
     {
       assert(m_bbox.inside(point));
 
       // work with Cartesian with origin in left bottom point of the domain
       // thus shift the input point. Then fin index of the cell where the point is.
-      // After that interpolate function value for the point.
       geometry_utils::MathVector3D relativePosition = point - m_bbox.getLow();
 
       size_t index[3];
       computeIndex(relativePosition, index);
 
-      return trilin_interp(relativePosition, index);
+      double val = _AS::getValue(index[0], index[1], index[2]);
+      geometry_utils::MathVector3D grad;
+      grad.setCoord(0, (_AS::getValue(index[0] + 1, index[1],     index[2])     - val)/h[0]);
+      grad.setCoord(1, (_AS::getValue(index[0],     index[1] + 1, index[2])     - val)/h[1]);
+      grad.setCoord(2, (_AS::getValue(index[0],     index[1],     index[2] + 1) - val)/h[2]);
+      return grad;
     }
 
-  private:
+    geometry_utils::MathVector3D compute_central(const geometry_utils::MathVector3D& point) const
+    {
+      assert(m_bbox.inside(point));
 
-     /**
-      * Interpolate using trilinear interpolation method
-      * names of variables are from http://en.wikipedia.org/wiki/Trilinear_interpolation
-      */
-     double trilin_interp(const geometry_utils::MathVector3D& inputPoint, const size_t* index) const
-     {
-       geometry_utils::MathVector3D x0(index[0] * h[0], index[1] * h[1], index[2] * h[2]);
-       geometry_utils::MathVector3D xd = inputPoint - x0;
-       double c[2][2];
-       for (size_t i = 0; i < 2; ++i) {
-         for (size_t j = 0; j < 2; ++j) {
-           c[i][j] = _AS::getValue(index[0], index[1] + i, index[2] + j) * (h[0] - xd.getX()) +
-               _AS::getValue(index[0] + 1, index[1] + i, index[2] + j) * xd.getX();
-         }
-       }
+      // work with Cartesian with origin in left bottom point of the domain
+      // thus shift the input point. Then fin index of the cell where the point is.
+      geometry_utils::MathVector3D relativePosition = point - m_bbox.getLow();
 
-       double c0 = c[0][0] * (h[1] - xd.getY()) + c[1][0] * xd.getY();
-       double c1 = c[0][1] * (h[1] - xd.getY()) + c[1][1] * xd.getY();
+      size_t index[3];
+      computeIndex(relativePosition, index);
 
-       double res = 1.0 / h[0] / h[1] / h[2] * (c0 * (h[2] - xd.getZ()) + c1 * xd.getZ());
-       return res;
-     }
+      geometry_utils::MathVector3D grad;
+      grad.setCoord(0, _AS::getValue(index[0] + 1, index[1],     index[2])     - _AS::getValue(index[0] - 1, index[1], index[2]));
+      grad.setCoord(1, _AS::getValue(index[0],     index[1] + 1, index[2])     - _AS::getValue(index[0], index[1] - 1, index[2]));
+      grad.setCoord(2, _AS::getValue(index[0],     index[1],     index[2] + 1) - _AS::getValue(index[0], index[1], index[2] - 1));
+
+      grad.normalize();
+      return grad;
+    }
   };
 }
 
-#endif /* LINEAR_INTERPOLATOR_H_ */
+#endif /* GRID_H_ */

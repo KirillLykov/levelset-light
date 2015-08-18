@@ -55,6 +55,8 @@ namespace
 
 #include "test_grid_operations.cpp"
 
+#include "test_grad.cpp"
+
 using namespace ls;
 using namespace geometry_utils;
 

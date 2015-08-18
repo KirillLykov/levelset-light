@@ -7,6 +7,7 @@
 
 #include <math.h>
 #include <memory.h>
+#include <cstring>
 #include "tolerance.h"
 
 namespace ls

@@ -64,8 +64,10 @@ namespace geometry_utils
     Box(const MathVector<T, Dim>& low, const MathVector<T, Dim>& top)
     {
       for (size_t i = 0; i < Dim; ++i) {
-        if (low.getCoord(i) >= top.getCoord(i))
+        if (low.getCoord(i) >= top.getCoord(i)) {
+          assert(false);
           throw std::logic_error("low must be bottomLeft point, while top - upper right");
+        }
       }
       this->low = low;
       this->top = top;
