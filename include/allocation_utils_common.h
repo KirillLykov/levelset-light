@@ -19,6 +19,10 @@
 #define NO_CXX11_ADDRESSOF
 #endif
 
+#ifdef __clang__
+#undef NO_CXX11_ADDRESSOF
+#endif
+
 #if defined(NO_CXX11_ADDRESSOF)
 namespace std
 {

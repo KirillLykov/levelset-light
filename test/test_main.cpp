@@ -13,7 +13,6 @@
 
 namespace
 {
-
   using namespace ls;
   using namespace geometry_utils;
 
@@ -57,8 +56,7 @@ namespace
 
 #include "test_grad.cpp"
 
-using namespace ls;
-using namespace geometry_utils;
+#include "test_collision.cpp"
 
 int main(int argc, char** argv)
 {
