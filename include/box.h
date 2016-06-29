@@ -200,6 +200,43 @@ namespace geometry_utils
     {
       return !(*this == anotherBox);
     }
+
+    // apply periodic boundary conditions to the point
+    void applyPBC(double coord[3]) const
+    {
+      if (inside(coord))
+         return;
+
+      while (coord[0] < low.getX()) coord[0] += getSizeX();
+      while (coord[0] >= top.getX()) coord[0] -= getSizeX();
+      coord[0] = std::max(coord[0], low.getX());
+
+      while (coord[1] < low.getY()) coord[1] += getSizeY();
+      while (coord[1] >= top.getY()) coord[1] -= getSizeY();
+      coord[1] = std::max(coord[1], low.getY());
+
+      while (coord[2] < low.getZ()) coord[2] += getSizeZ();
+      while (coord[2] >= top.getZ()) coord[2] -= getSizeZ();
+      coord[2] = std::max(coord[2], low.getZ());
+    }
+
+    void applyPBC(MathVector<T, Dim>& coord) const
+    {
+      if (inside(coord))
+         return;
+
+      while (coord.getX() < low.getX()) coord.setX( coord.getX() + getSizeX() );
+      while (coord.getX() >= top.getX()) coord.setX( coord.getX() - getSizeX() );
+      coord.setX( std::max(coord.getX(), low.getX()) );
+
+      while (coord.getY() < low.getY()) coord.setY( coord.getY() + getSizeY() );
+      while (coord.getY() >= top.getY()) coord.setY( coord.getY() - getSizeY() );
+      coord.setY( std::max(coord.getY(), low.getY()) );
+
+      while (coord.getZ() < low.getZ()) coord.setZ( coord.getZ() + getSizeZ() );
+      while (coord.getZ() >= top.getZ()) coord.setZ( coord.getZ() - getSizeZ() );
+      coord.setZ( std::max(coord.getZ(), low.getZ()) );
+    }
   };
 
   typedef Box<double, 2> Box2D;

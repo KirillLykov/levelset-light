@@ -29,6 +29,83 @@ TEST(CollisionTest, bback_cylinder)
   EXPECT_TRUE( (pos - MathVector3D(0.0, 0.75, 0.0)).getLength() < tolerance );
 }
 
+TEST(CollisionTest, bback_cylinder_pbc)
+{
+  using namespace ls;
+  size_t n = 32, m = 32, w = 32;
+  const double tolerance = 1.0/n;
+  IImplicitFunctionDPtr func( new AxialCylinderD(zDim, 6) );
+  FillInGrid fill(func);
+
+  Grid3D<double> grid(n, m, w, Box3D(16.0, 16.0, 16.0));
+  fill.run(grid);
+
+  Collision collision(&grid);
+
+  MathVector3D pos(-4.05265, -4.42603, 8.00028);
+  MathVector3D vel(-0.759647, -0.528299, 0.615282);
+  double dt = 1.0;
+
+  collision.applyPBC(pos);
+  double currsdf = collision.computeSDF(pos);
+  collision.bounceBack(currsdf, dt, pos, vel);
+
+  MathVector3D diff = pos - MathVector3D(-4.0492098, -4.4236375, 16-8.0025063);
+  collision.applyPBC(diff);
+  EXPECT_TRUE( diff.getLength() < tolerance );
+
+  //
+  pos = MathVector3D(0.0, 6.25, 8.1);
+  vel = MathVector3D(0.0, 1.0, 0.0);
+  collision.applyPBC(pos);
+  currsdf = collision.computeSDF(pos);
+  collision.bounceBack(currsdf, dt, pos, vel);
+  diff = pos - MathVector3D(0.0, 5.7473117, 8.1);
+  collision.applyPBC(diff);
+  EXPECT_TRUE( diff.getLength() < tolerance );
+
+  // too close to the border so it is a bit inside
+  dt = 1e-3;
+  pos = MathVector3D(3.85635, 4.59372, 4.82354);
+  MathVector3D posOrig = pos;
+  vel = MathVector3D(-2.52048, 2.13566, -1.08796);
+  currsdf = collision.computeSDF(pos);
+  collision.bounceBack(currsdf, dt, pos, vel);
+  double length = (pos - posOrig).getLength();
+  double newcurrsdf = collision.computeSDF(pos);
+  EXPECT_TRUE( length < tolerance && newcurrsdf < -2.0*1e-4);
+
+  // the point is inside but too close to the interface
+  pos = MathVector3D(1.192889499240467, 5.876849556783832, 6.565664278186738);
+  posOrig = pos;
+  vel = MathVector3D(-0.381401772476884, 0.1058015442625392, -0.2673344284414041);
+  currsdf = collision.computeSDF(pos);
+  collision.bounceBack(currsdf, dt, pos, vel);
+  length = (pos - posOrig).getLength();
+  newcurrsdf = collision.computeSDF(pos);
+  EXPECT_TRUE( length < tolerance && newcurrsdf < -2.0*1e-4);
+
+  pos = MathVector3D(3.5603906528217, 4.823928346832147, 4.021767564215939);
+  posOrig = pos;
+  vel = MathVector3D(1.968563824141501, -0.002774591556346406, -1.484421351051873);
+  currsdf = collision.computeSDF(pos);
+  collision.bounceBack(currsdf, dt, pos, vel);
+  length = (pos - posOrig).getLength();
+  newcurrsdf = collision.computeSDF(pos);
+  EXPECT_TRUE( length < 8.0*1e-4 && newcurrsdf < -8.0*1e-4);
+
+  //
+  pos = MathVector3D(-4.5745, 3.87941, 0.801322);
+  vel = MathVector3D(1.39311, 1.68965, -0.0923976);
+  currsdf = collision.computeSDF(pos);
+  collision.bounceBack(currsdf, dt, pos, vel);
+  diff = pos - MathVector3D(0.0, 5.7473117, 8.1);
+  collision.applyPBC(diff);
+  EXPECT_TRUE( diff.getLength() < tolerance );
+
+
+}
+
 template<typename T>
 class TwoPlanceInY : public IImplicitFunction<T>
 {
