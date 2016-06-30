@@ -18,17 +18,18 @@
 namespace ls
 {
 using namespace ls::geometry_utils;
-class Collision
+typedef ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > _Interpolator;
+class Collision : private _Interpolator
 {
   typedef ls::Grid3D<double> _LSGrid;
   typedef ls::Grad<double, ls::BasicReadAccessStrategy > _BasicGrad;
-  typedef ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > _Interpolator;
 
   _LSGrid* m_grid; // grid is stored somewhere else, don't clean it
-  _Interpolator m_interpolator;
+  //_Interpolator m_interpolator;
   _BasicGrad m_grad;
   const double m_tolerance;
 
+public:
   MathVector3D computeFGrad(const MathVector3D& point) const
   {
     MathVector3D grad;
@@ -40,10 +41,48 @@ class Collision
     return grad;
   }
 
-public:
+  // expensive way to compute gradient, when |computeFGrad()| > 1
+  //from the paper "Adaptively Sampled Distance Fields : A General Representation of Shape for Computer Graphics"
+  geometry_utils::MathVector3D computePreciseGrad(const geometry_utils::MathVector3D& point) const
+  {
+    Box3D bb = m_grid->getBoundingBox();
+    assert(bb.inside(point));
+
+    // work with Cartesian with origin in left bottom point of the domain
+    // thus shift the input point. Then fin index of the cell where the point is.
+    geometry_utils::MathVector3D relativePosition = point - bb.getLow();
+    geometry_utils::MathVector3D grad;
+    for (size_t i = 0; i < 3; ++i) {
+      double h =  static_cast<double>(bb.getIthSize(i)) / (m_grid->size(i) - 1.0);
+      double index = mapIndex( static_cast<int>(relativePosition.getCoord(i) / h ), i );
+
+      geometry_utils::MathVector3D p1 = point;
+      p1.setCoord(i, index*h +  bb.getLow().getCoord(i));
+      bb.applyPBC(p1);
+
+      geometry_utils::MathVector3D p2 = point;
+      p2.setCoord(i, (index+1)*h  +  bb.getLow().getCoord(i));
+      bb.applyPBC(p2);
+
+      grad.setCoord(i, (compute(p2) - compute(p1)) / h);
+    }
+
+    return grad;
+  }
+
+  MathVector3D computeGrad(const MathVector3D& point) const
+  {
+    MathVector3D grad = computeFGrad(point);
+    if (grad*grad > 1.1*1.1) { // gradCheap.getLength() > 1.1
+      grad = computePreciseGrad(point);
+    }
+    grad.normalize();
+    assert( fabs(grad.getLength() - 1.0) < 1e-6);
+    return grad;
+  }
 
   Collision(_LSGrid* grid)
-  : m_grid(grid), m_interpolator(*m_grid), m_grad(*m_grid), m_tolerance(1e-4)
+  : _Interpolator(*grid), m_grid(grid), m_grad(*m_grid), m_tolerance(1e-4)
   {
   }
 
@@ -67,7 +106,7 @@ public:
      ls::geometry_utils::MathVector3D relativePosition = point - m_grid->getBoundingBox().getLow();
 
      size_t index[3];
-     m_interpolator.computeIndex(relativePosition, index);
+     computeIndex(relativePosition, index);
      assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
      dist = (*m_grid)(index[0], index[1], index[2]);
     }
@@ -80,7 +119,7 @@ public:
     if (!m_grid->getBoundingBox().inside(point))
       dist = -std::numeric_limits<double>::infinity();
     else
-      dist = m_interpolator.compute(point);
+      dist = compute(point);
 
     return dist;
     //return fabs(dist) < m_tolerance ? 0.0 : dist;
@@ -89,7 +128,7 @@ public:
   // it should be called rarely, happens due to numerical reasons
   void rescueParticle(double currsdf, MathVector3D& pos) const
   {
-    MathVector3D grad = computeFGrad(pos);
+    MathVector3D grad = computeGrad(pos);
     for (size_t i = 0; i < 5; ++i) {
       double stepsize = std::max(m_tolerance, fabs(currsdf));
       pos -= grad*stepsize;
@@ -145,15 +184,8 @@ public:
       // iterations of newton method t^(n+1)=t^n - phi(t^n)/phi'(t^n)
       for (size_t i = 0; i < 5; ++i)
       {
-        grad = computeFGrad(xstar);
+        grad = computeGrad(xstar);
 
-        if (grad.getLength() >= 1.1) {
-          std::cout << "grad.getLength() >= 1.1| " << grad.getLength() << " " << currsdf << " " << nmultipleReflections << " " << i << "\n";
-          std::cout << grad.getX() << " " << grad.getY() << " " << grad.getZ() <<"\n";
-          std::cout << xstar.getX() << " " << xstar.getY() << " " << xstar.getZ() <<"\n";
-        }
-
-        assert(grad.getLength() < 1.1);
         const double DphiDt = std::max(m_tolerance, grad * vel);
 
         assert(DphiDt > 0);

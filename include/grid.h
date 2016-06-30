@@ -235,6 +235,7 @@ namespace ls
     Grid3D()
       : m_n1(0), m_n2(0), m_n3(0)
     {
+
     }
 
     Grid3D(_size_type n1, _size_type n2, _size_type n3, geometry_utils::Box3D box = geometry_utils::Box3D())
