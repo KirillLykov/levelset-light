@@ -13,6 +13,32 @@
 #include <random>
 #include <iostream>
 
+namespace {
+  template<typename T>
+  class Square : public IImplicitFunction<T>
+  {
+    T m_d;
+  public:
+    Square(T d) : m_d(d) {}
+    T compute(const MathVector<T, 3>& point) const
+    {
+      return fabs(point.getX()) + fabs(point.getY()) + fabs(point.getZ()) - m_d;
+    }
+  };
+
+  template<typename T>
+  class TwoPlanceInY : public IImplicitFunction<T>
+  {
+    T m_d;
+  public:
+    TwoPlanceInY(T d) : m_d(d) {}
+    T compute(const MathVector<T, 3>& point) const
+    {
+      return fabs(point.getY()) - m_d;
+    }
+  };
+}
+
 TEST(CollisionTest, bback_grad)
 {
   using namespace ls;
@@ -27,20 +53,21 @@ TEST(CollisionTest, bback_grad)
   const double tolerance = 5.0/n * sqrt(3);
 
   Collision collision(&grid);
-  // angle to plane
+  //
   std::default_random_engine generator;
   std::uniform_real_distribution<double> distribution(-2.49, 2.49);
 
   int i = 0, j = 0;
+
   while (i < 1000) {
     MathVector3D pos(distribution(generator), distribution(generator), distribution(generator));
     const MathVector3D grad_exact = pos / pos.getLength();
     MathVector3D grad1 = collision.computeFGrad(pos);
-    EXPECT_TRUE(grad1.getLength() <= 1.0 + 0.2);
+    EXPECT_LT( fabs(grad1.getLength() - 1.0), 0.2);
     double diff1 = (grad1 - grad_exact).getLength();
     EXPECT_TRUE(diff1 < 2*tolerance);
     MathVector3D grad2 = collision.computePreciseGrad(pos);
-    EXPECT_TRUE(grad2.getLength() <= 1.0 + 0.1);
+    EXPECT_LT( fabs(grad2.getLength() - 1.0), 0.2);
     double diff2 = (grad2 - grad_exact).getLength();
     EXPECT_TRUE(diff2 < tolerance);
 
@@ -48,7 +75,54 @@ TEST(CollisionTest, bback_grad)
       ++j;
     ++i;
   }
-  EXPECT_TRUE( j/1000.0 < 0.5 ); // usually precise scheme is better
+
+  EXPECT_LT( j/1000.0, 0.5 ); // usually precise scheme is better
+}
+
+TEST(CollisionTest, bback_grad_discont)
+{
+  using namespace ls;
+  const size_t n = 128, m = 128, w = 128;
+
+  double r = 5.0;
+  IImplicitFunctionDPtr func( new Square<double>(r) );
+  FillInGrid fill(func);
+
+  Grid3D<double> grid(n, m, w, Box3D(15.0, 15.0, 15.0));
+  fill.run(grid);
+
+  const double tolerance = 15.0/n * sqrt(3);
+
+  Collision collision(&grid);
+
+  const MathVector3D top(r, 0.0, 0.0);
+  double dist = collision.computeSDF(top);
+  EXPECT_LT(dist, tolerance);
+
+  // now add pertrubations
+  {
+    MathVector3D grad_exact(1.0, 0.0, 0.0); // also strictly speaking it does not exist
+    MathVector3D p = top + MathVector3D(1.0/n, 1.0/n, 1.0/n);
+    MathVector3D grad1 = collision.computeFGrad(p);
+    double diff1 = (grad1 - grad_exact).getLength();
+    if (diff1 > 1e-12)
+      std::cout << "AAA";
+    EXPECT_LT(diff1, 1e-12);
+    MathVector3D grad2 = collision.computePreciseGrad(p);
+    double diff2 = (grad2 - grad_exact).getLength();
+    EXPECT_LT(diff2, 1e-12);
+  }
+
+  {
+    MathVector3D grad_exact(1.0, 1.0, 1.0);
+    grad_exact.normalize();
+    MathVector3D p = top + MathVector3D(0, 10.0/n, 10.0/n);
+    MathVector3D grad1 = collision.computeGrad(p); // since grad will be spoiled
+    double diff1 = (grad1 - grad_exact).getLength();
+    if (diff1 > 1e-12)
+      std::cout << "AAA";
+    EXPECT_LT(diff1, 1e-12);
+  }
 }
 
 TEST(CollisionTest, bback_cylinder)
@@ -178,18 +252,6 @@ TEST_F(BBCylinderTest, bback_cylinder_pbc6)
   EXPECT_TRUE( diff.getLength() < tolerance );
 }
 
-template<typename T>
-class TwoPlanceInY : public IImplicitFunction<T>
-{
-  T m_d;
-public:
-  TwoPlanceInY(T d) : m_d(d) {}
-  T compute(const MathVector<T, 3>& point) const
-  {
-    return fabs(point.getY()) - m_d;
-  }
-};
-
 TEST(CollisionTest, bback_two_planes)
 {
   using namespace ls;
@@ -268,6 +330,24 @@ TEST(CollisionTest, bback_multiplereflections)
 
   EXPECT_TRUE( (pos - MathVector3D(0.0, -0.002, 0.0)).getLength() < tolerance );
 }
+
+TEST(CollisionTest, bback_square)
+{
+  using namespace ls;
+  const double tolerance = 1e-4;
+  size_t n = 64, m = 64, w = 64;
+  IImplicitFunctionDPtr func( new Square<double>(5.0) );
+  FillInGrid fill(func);
+
+  Grid3D<double> grid(n, m, w, Box3D(15.0, 15.0, 15.0));
+  fill.run(grid);
+
+  BasicSerializerHDF5 writer(grid, "test-aux/square", "data");
+  writer.run();
+
+  Collision collision(&grid);
+}
+
 /*
 template<typename T>
 class ThinLayer : public IImplicitFunction<T>

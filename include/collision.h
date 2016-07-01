@@ -30,6 +30,17 @@ class Collision : private _Interpolator
   const double m_tolerance;
 
 public:
+  MathVector3D computeCGrad(const MathVector3D& point) const
+  {
+    MathVector3D grad;
+    if (!m_grid->getBoundingBox().inside(point))
+      grad = MathVector3D(-std::numeric_limits<double>::infinity());
+    else {
+      grad = m_grad.compute_central(point);
+    }
+    return grad;
+  }
+
   MathVector3D computeFGrad(const MathVector3D& point) const
   {
     MathVector3D grad;
