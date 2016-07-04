@@ -223,6 +223,12 @@ namespace geometry_utils
     {
       m_data[2] = value;
     }
+
+    void max(const T& value)
+    {
+      for (size_t i = 0; i < 3; ++i)
+        m_data[i] = std::max(value, m_data[i]);
+    }
   };
 
   typedef MathVector<double, 3> MathVector3D;

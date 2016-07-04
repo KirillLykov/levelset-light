@@ -14,20 +14,22 @@
 #include <limits>
 #include <iomanip>
 #include <cassert>
+#include <iostream>
 
 namespace ls
 {
 using namespace ls::geometry_utils;
-typedef ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > _Interpolator;
-class Collision : private _Interpolator
+
+template <typename T, template<typename X> class AccessStrategy>
+class Collision : public ls::LinearInterpolator<T,AccessStrategy>
 {
-  typedef ls::Grid3D<double> _LSGrid;
-  typedef ls::Grad<double, ls::BasicReadAccessStrategy > _BasicGrad;
+  typedef ls::LinearInterpolator<T,AccessStrategy> _LI;
+  typedef ls::Grid3D<T> _LSGrid;
+  typedef ls::Grad<T, AccessStrategy > _BasicGrad;
 
   _LSGrid* m_grid; // grid is stored somewhere else, don't clean it
-  //_Interpolator m_interpolator;
   _BasicGrad m_grad;
-  const double m_tolerance;
+  const T m_tolerance;
 
 public:
   MathVector3D computeCGrad(const MathVector3D& point) const
@@ -52,6 +54,28 @@ public:
     return grad;
   }
 
+  MathVector3D computeBGrad(const MathVector3D& point) const
+  {
+    MathVector3D grad;
+    if (!m_grid->getBoundingBox().inside(point))
+      grad = MathVector3D(-std::numeric_limits<double>::infinity());
+    else {
+      grad = m_grad.compute_backward(point);
+    }
+    return grad;
+  }
+
+  MathVector3D computeBiasedGrad(const MathVector3D& point, const MathVector3D& vel) const
+  {
+    MathVector3D grad;
+    if (!m_grid->getBoundingBox().inside(point))
+      grad = MathVector3D(-std::numeric_limits<double>::infinity());
+    else {
+      grad = m_grad.compute_biased(point, vel);
+    }
+    return grad;
+  }
+
   // expensive way to compute gradient, when |computeFGrad()| > 1
   //from the paper "Adaptively Sampled Distance Fields : A General Representation of Shape for Computer Graphics"
   geometry_utils::MathVector3D computePreciseGrad(const geometry_utils::MathVector3D& point) const
@@ -64,18 +88,18 @@ public:
     geometry_utils::MathVector3D relativePosition = point - bb.getLow();
     geometry_utils::MathVector3D grad;
     for (size_t i = 0; i < 3; ++i) {
-      double h =  static_cast<double>(bb.getIthSize(i)) / (m_grid->size(i) - 1.0);
-      double index = mapIndex( static_cast<int>(relativePosition.getCoord(i) / h ), i );
+      T h =  static_cast<T>(bb.getIthSize(i)) / (m_grid->size(i) - T(1.0));
+      T index = _LI::mapIndex( static_cast<int>(relativePosition.getCoord(i) / h ), i );
 
       geometry_utils::MathVector3D p1 = point;
       p1.setCoord(i, index*h +  bb.getLow().getCoord(i));
-      bb.applyPBC(p1);
+      //bb.applyPBC(p1);
 
       geometry_utils::MathVector3D p2 = point;
       p2.setCoord(i, (index+1)*h  +  bb.getLow().getCoord(i));
-      bb.applyPBC(p2);
+      //bb.applyPBC(p2);
 
-      grad.setCoord(i, (compute(p2) - compute(p1)) / h);
+      grad.setCoord(i, (_LI::compute(p2) - _LI::compute(p1)) / h);
     }
 
     return grad;
@@ -84,19 +108,19 @@ public:
   MathVector3D computeGrad(const MathVector3D& point) const
   {
     MathVector3D grad = computeFGrad(point);
-    if (grad*grad > 1.1*1.1) { // gradCheap.getLength() > 1.1
+    if ( fabs(grad*grad - T(1.0)) > T(0.2)) {
       grad = computePreciseGrad(point);
+      grad.normalize();
     }
-    grad.normalize();
-    assert( fabs(grad.getLength() - 1.0) < 1e-6);
     return grad;
   }
 
   Collision(_LSGrid* grid)
-  : _Interpolator(*grid), m_grid(grid), m_grad(*m_grid), m_tolerance(1e-4)
+  : _LI(*grid), m_grid(grid), m_grad(*m_grid), m_tolerance(1e-4)
   {
   }
 
+  /*
   void applyPBC(double coord[3]) const
   {
     m_grid->getBoundingBox().applyPBC(coord);
@@ -106,80 +130,75 @@ public:
   {
     m_grid->getBoundingBox().applyPBC(coord);
   }
+  */
 
   // Just value in the left bottom corner of the cell where the point is
   double computeCheapSDF(const MathVector3D& point) const
   {
-    double dist;
+    T dist;
     if (!m_grid->getBoundingBox().inside(point))
      dist = -std::numeric_limits<double>::infinity();
     else {
      ls::geometry_utils::MathVector3D relativePosition = point - m_grid->getBoundingBox().getLow();
 
      size_t index[3];
-     computeIndex(relativePosition, index);
+     _LI::computeIndex(relativePosition, index);
      assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
      dist = (*m_grid)(index[0], index[1], index[2]);
     }
     return dist;
   }
 
-  double computeSDF(const MathVector3D& point) const
+  T computeSDF(const MathVector3D& point) const
   {
-    double dist;
-    if (!m_grid->getBoundingBox().inside(point))
-      dist = -std::numeric_limits<double>::infinity();
-    else
-      dist = compute(point);
-
-    return dist;
+    return _LI::compute(point);
     //return fabs(dist) < m_tolerance ? 0.0 : dist;
   }
 
   // it should be called rarely, happens due to numerical reasons
-  void rescueParticle(double currsdf, MathVector3D& pos) const
+  void rescueParticle(T currsdf, MathVector3D& pos) const
   {
     MathVector3D grad = computeGrad(pos);
     for (size_t i = 0; i < 5; ++i) {
-      double stepsize = std::max(m_tolerance, fabs(currsdf));
+      T stepsize = std::max(m_tolerance, fabs(currsdf));
       pos -= grad*stepsize;
       currsdf = computeSDF(pos);
-      if (currsdf < -2.0*m_tolerance)
+      if (currsdf < T(-2.0)*m_tolerance)
         break;
     }
   }
 
   // sometimes particle is on the border, we want to shift it inside to avoid numerical problems
   // it is close to the interface so use gradient computed earlier for the intersection point xstar
-  void shiftInside(double currsdf, const MathVector3D& grad, MathVector3D& pos) const
+  void shiftInside(T currsdf, const MathVector3D& grad, MathVector3D& pos) const
   {
-    double stepsize = 8.0*std::max(m_tolerance, fabs(currsdf));
+    T stepsize = T(8.0)*std::max(m_tolerance, fabs(currsdf));
     pos -= grad*stepsize;
   }
 
-  void bounceBack(double currsdf, double dt, MathVector3D& pos, MathVector3D& vel)
+  void bounceBack(T currsdf, double dt, MathVector3D& pos, MathVector3D& vel)
   {
     MathVector3D origpos = pos; MathVector3D origvel = vel;
     using namespace ls::geometry_utils::raw_math_vector;
-    double subdt = dt;
+    T subdt = dt;
     MathVector3D posOld, grad;
     size_t nmultipleReflections = 0; // to tackle multiple reflections
     do
     {
-      if (currsdf < 0) {
-        std::cout << "currsdf < 0| " << currsdf << " " << dt << " " << nmultipleReflections << "\n";
-        std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-        std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
-      }
+      //if (currsdf < 0) {
+        //std::cout << "currsdf < 0| " << currsdf << " " << dt << " " << nmultipleReflections << "\n";
+        //std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
+        //std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
+      //}
 
       assert(currsdf >= 0.0);
 
       posOld = pos - dt * vel;
 
-      if (computeSDF(posOld) > 0) {
-        std::cout << "computeSDF(posOld) >= 0| " << computeSDF(posOld) << " " << dt << " " << nmultipleReflections << "\n";
-        std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-        std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
+      if (computeSDF(posOld) > 0.0) {
+        //std::cout << "computeSDF(posOld) >= 0| " << computeSDF(posOld) << " " << dt << " " << nmultipleReflections << "\n";
+        //std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
+        //std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
 
         rescueParticle(currsdf, posOld);
         pos = posOld;
@@ -197,25 +216,25 @@ public:
       {
         grad = computeGrad(xstar);
 
-        const double DphiDt = std::max(m_tolerance, grad * vel);
+        const T DphiDt = std::max(m_tolerance, grad * vel);
 
         assert(DphiDt > 0);
 
-        subdt = std::min(dt, std::max(0.0, subdt - xstarSdf / DphiDt * (1.0 + m_tolerance)));
+        subdt = std::min(dt, std::max(T(0.0), subdt - xstarSdf / DphiDt * (1.0 + m_tolerance)));
 
         MathVector3D xstarNew = posOld + subdt * vel;
         MathVector3D diffXstar = xstar - xstarNew;
-        applyPBC(diffXstar);
-        double diff = diffXstar.getLength();
-        if (diff < m_tolerance)
+        //applyPBC(diffXstar);
+        T diff2 = diffXstar * diffXstar;
+        if (diff2 < m_tolerance*m_tolerance)
           break;
 
         xstar = xstarNew;
-        applyPBC(xstar);
+        //applyPBC(xstar);
         xstarSdf = computeSDF(xstar);
       }
 
-      const double lambda = 2.0 * subdt - dt;
+      const T lambda = 2.0 * subdt - dt;
 
       pos = posOld + lambda * vel;
 
@@ -237,7 +256,7 @@ public:
     // could not resolve
     if (currsdf > 0)
     {
-      std::cout << "currsdf >= 0" << nmultipleReflections << "\n";
+      std::cout << "Could not bb, nm" << nmultipleReflections << "\n";
       pos = posOld;
       assert(computeSDF(pos) < 0);
     }
@@ -246,7 +265,8 @@ public:
   }
 
 };
-
+typedef Collision<double, ls::BasicReadAccessStrategy>  CollisionBasic;
+typedef Collision<double, ls::PeriodicReadAS>  CollisionPeriodic;
 
 }
 

@@ -70,6 +70,17 @@ TEST(BoxTest, box3D)
   EXPECT_EQ(0.0, center.getZ());
 }
 
+TEST(BoxTest, box3dPointOnBorder)
+{
+  using namespace geometry_utils;
+
+  MathVector3D low(-42.5, -24.80000000000000, -14);
+  MathVector3D top(42.5, 24.80000000000000, 14);
+  Box3D box(low, top);
+  MathVector3D p(-13.886428108937016, -24.800000000026049, 10.568595969105855);
+  EXPECT_TRUE(box.inside(p));
+}
+
 TEST(BoxTest, box2D)
 {
   using namespace geometry_utils;

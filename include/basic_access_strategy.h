@@ -42,6 +42,11 @@ namespace ls
     {
     }
 
+    MathVector<T, 3> getRelativePosition(const MathVector<T, 3>& point) const
+    {
+      return point - m_grid.getBoundingBox().getLow();
+    }
+
     size_t mapIndex(int inputIndex, size_t dimInd) const
     {
       assert(inputIndex >= 0);
@@ -76,6 +81,52 @@ namespace ls
       m_grid(i, j, k) = *newValues;
     }
   };
+
+
+  /**
+   * AccessStrategy for periodic domain. Points may be out of the domain cube
+   * so index at getValue is also out of range
+   */
+  template<class T>
+  class PeriodicReadAS
+  {
+  protected:
+    typedef ls::Grid3D<T> _Grid;
+    const _Grid& m_grid;
+    geometry_utils::Box3D m_bbox;
+
+    explicit PeriodicReadAS(const _Grid& grid)
+    : m_grid(grid)
+    {
+      m_bbox = m_grid.getBoundingBox();
+    }
+
+    MathVector<T, 3> getRelativePosition(const MathVector<T, 3>& point) const
+    {
+      MathVector<T, 3> res = point;
+      m_bbox.applyPBC(res);
+      res -= m_bbox.getLow();
+      res.max(T(0.0));
+      return res;
+    }
+
+    size_t mapIndex(int inputIndex, size_t dimInd) const
+    {
+      // it is needed for the interpolation
+      int gsize = static_cast<int>(m_grid.size(dimInd));
+      inputIndex %= gsize - 1;
+      while (inputIndex < 0)
+        inputIndex += gsize - 1;
+      return static_cast<size_t>(inputIndex);
+    }
+
+    T getValue(size_t i, size_t j, size_t k) const
+    {
+      assert (i < m_grid.size(0) && j < m_grid.size(1) && k < m_grid.size(2));
+      return m_grid(i, j, k);
+    }
+  };
+
 }
 
 #endif /* BASIC_ACCESS_STRATEGY_H_ */

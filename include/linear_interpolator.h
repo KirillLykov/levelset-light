@@ -27,10 +27,10 @@ namespace ls
     : _AS(grid), m_bbox(grid.getBoundingBox())
     {
       for (size_t i = 0; i < 3; ++i)
-        h[i] = m_bbox.getIthSize(i) / (_AS::m_grid.size(i) - 1.0);
+        h[i] = m_bbox.getIthSize(i) / (_AS::m_grid.size(i) - T(1.0));
     }
 
-    double compute(double x, double y, double z) const
+    double compute(T x, T y, T z) const
     {
       geometry_utils::MathVector3D point(x, y, z);
       return compute(point);
@@ -38,23 +38,22 @@ namespace ls
 
     void computeIndex(const geometry_utils::MathVector3D& relativePosition, size_t* index) const
     {
-      assert(relativePosition.getX() >= 0.0 && relativePosition.getY() >= 0.0 && relativePosition.getZ() >= 0.0);
+      assert(relativePosition.getX() >= T(0.0) && relativePosition.getY() >= T(0.0) && relativePosition.getZ() >= T(0.0));
       // index_x = floor( p_x / h_x )
       for (size_t i = 0; i < 3; ++i) {
-        // coef := 1 / h
-        double coef = (_AS::m_grid.size(i) - 1.0) / static_cast<double>(m_bbox.getIthSize(i));
-        index[i] = _AS::mapIndex( static_cast<int>(relativePosition.getCoord(i) * coef), i );
+        index[i] = _AS::mapIndex( static_cast<int>(relativePosition.getCoord(i) / h[i]), i );
       }
+      assert(index[0] < _AS::m_grid.size(0) && index[1] < _AS::m_grid.size(1) && index[2] < _AS::m_grid.size(2));
     }
 
     double compute(const geometry_utils::MathVector3D& point) const
     {
-      assert(m_bbox.inside(point));
+      //assert(m_bbox.inside(point));
 
       // work with Cartesian with origin in left bottom point of the domain
       // thus shift the input point. Then fin index of the cell where the point is.
       // After that interpolate function value for the point.
-      geometry_utils::MathVector3D relativePosition = point - m_bbox.getLow();
+      geometry_utils::MathVector3D relativePosition = _AS::getRelativePosition(point);
 
       size_t index[3];
       computeIndex(relativePosition, index);

@@ -15,6 +15,18 @@
 
 namespace {
   template<typename T>
+  class RecPipe : public IImplicitFunction<T>
+  {
+    T m_d;
+  public:
+    RecPipe(T d) : m_d(d) {}
+    T compute(const MathVector<T, 3>& point) const
+    {
+      return fabs(point.getX()) + fabs(point.getY()) - m_d;
+    }
+  };
+
+  template<typename T>
   class Square : public IImplicitFunction<T>
   {
     T m_d;
@@ -52,7 +64,7 @@ TEST(CollisionTest, bback_grad)
 
   const double tolerance = 5.0/n * sqrt(3);
 
-  Collision collision(&grid);
+  CollisionBasic collision(&grid);
   //
   std::default_random_engine generator;
   std::uniform_real_distribution<double> distribution(-2.49, 2.49);
@@ -85,7 +97,7 @@ TEST(CollisionTest, bback_grad_discont)
   const size_t n = 128, m = 128, w = 128;
 
   double r = 5.0;
-  IImplicitFunctionDPtr func( new Square<double>(r) );
+  IImplicitFunctionDPtr func( new RecPipe<double>(r) );
   FillInGrid fill(func);
 
   Grid3D<double> grid(n, m, w, Box3D(15.0, 15.0, 15.0));
@@ -93,7 +105,7 @@ TEST(CollisionTest, bback_grad_discont)
 
   const double tolerance = 15.0/n * sqrt(3);
 
-  Collision collision(&grid);
+  CollisionBasic collision(&grid);
 
   const MathVector3D top(r, 0.0, 0.0);
   double dist = collision.computeSDF(top);
@@ -105,8 +117,6 @@ TEST(CollisionTest, bback_grad_discont)
     MathVector3D p = top + MathVector3D(1.0/n, 1.0/n, 1.0/n);
     MathVector3D grad1 = collision.computeFGrad(p);
     double diff1 = (grad1 - grad_exact).getLength();
-    if (diff1 > 1e-12)
-      std::cout << "AAA";
     EXPECT_LT(diff1, 1e-12);
     MathVector3D grad2 = collision.computePreciseGrad(p);
     double diff2 = (grad2 - grad_exact).getLength();
@@ -114,14 +124,25 @@ TEST(CollisionTest, bback_grad_discont)
   }
 
   {
-    MathVector3D grad_exact(1.0, 1.0, 1.0);
+    MathVector3D grad_exact(1.0, 1.0, 0.0);
     grad_exact.normalize();
-    MathVector3D p = top + MathVector3D(0, 10.0/n, 10.0/n);
+    MathVector3D p = top + MathVector3D(-1e-1, 1e-1, 0.0);
     MathVector3D grad1 = collision.computeGrad(p); // since grad will be spoiled
-    double diff1 = (grad1 - grad_exact).getLength();
-    if (diff1 > 1e-12)
-      std::cout << "AAA";
-    EXPECT_LT(diff1, 1e-12);
+    EXPECT_LT((grad1 - grad_exact).getLength(), 1e-12);
+
+    MathVector3D grad2 = collision.computeFGrad(p);
+    EXPECT_LT((grad2 - MathVector3D(1.0, 1.0, 0.0)).getLength(), 1e-12);
+    MathVector3D grad3 = collision.computeBGrad(p);
+    EXPECT_LT((grad3 - MathVector3D(1.0, 0.0, 0.0)).getLength(), 1e-12);
+
+    MathVector3D vel(0.0, 1.0, 0.0);
+    MathVector3D grad4 = collision.computeBiasedGrad(p, vel);
+    EXPECT_LT((grad4 - MathVector3D(1.0, 1.0, 0.0)).getLength(), 1e-12);
+
+    vel = MathVector3D(0.0, -1.0, 0.0);
+    MathVector3D grad5 = collision.computeBiasedGrad(p, vel);
+    EXPECT_LT((grad5 - MathVector3D(1.0, 0.0, 0.0)).getLength(), 1e-12);
+
   }
 }
 
@@ -136,7 +157,7 @@ TEST(CollisionTest, bback_cylinder)
   Grid3D<double> grid(n, m, w, Box3D(10.0, 10.0, 10.0));
   fill.run(grid);
 
-  Collision collision(&grid);
+  CollisionBasic collision(&grid);
 
   MathVector3D pos(0.0, 1.25, 0.0);
   MathVector3D vel(0.0, 1.0, 0.0);
@@ -158,7 +179,7 @@ class BBCylinderTest : public testing::Test {
     grid.reset( new Grid3D<double>(n, m, w, Box3D(16.0, 16.0, 16.0)) );
     fill.run(*grid);
 
-    collision.reset( new Collision(grid.get()) );
+    collision.reset( new CollisionPeriodic(grid.get()) );
   }
   virtual void TearDown() {
     grid = nullptr;
@@ -166,7 +187,7 @@ class BBCylinderTest : public testing::Test {
   }
 
   std::shared_ptr< Grid3D<double> > grid;
-  std::shared_ptr< Collision > collision;
+  std::shared_ptr< CollisionPeriodic > collision;
   const size_t n = 32, m = 32, w = 32;
   const double tolerance = 1.0/n;
 };
@@ -177,12 +198,14 @@ TEST_F(BBCylinderTest, bback_cylinder_pbc1)
   MathVector3D vel(-0.759647, -0.528299, 0.615282);
   double dt = 1.0;
 
-  collision->applyPBC(pos);
+  //collision->applyPBC(pos);
   double currsdf = collision->computeSDF(pos);
+  std::cout << currsdf << " AAAA\n";
   collision->bounceBack(currsdf, dt, pos, vel);
 
+  std::cout << "BBBB\n";
   MathVector3D diff = pos - MathVector3D(-4.0492098, -4.4236375, 16-8.0025063);
-  collision->applyPBC(diff);
+  //collision->applyPBC(diff);
   EXPECT_TRUE( diff.getLength() < tolerance );
 }
 
@@ -191,11 +214,11 @@ TEST_F(BBCylinderTest, bback_cylinder_pbc2)
   double dt = 1.0;
   MathVector3D pos(0.0, 6.25, 8.1);
   MathVector3D vel(0.0, 1.0, 0.0);
-  collision->applyPBC(pos);
+  //collision->applyPBC(pos);
   double currsdf = collision->computeSDF(pos);
   collision->bounceBack(currsdf, dt, pos, vel);
   MathVector3D diff = pos - MathVector3D(0.0, 5.7473117, 8.1);
-  collision->applyPBC(diff);
+  //collision->applyPBC(diff);
   EXPECT_TRUE( diff.getLength() < tolerance );
 }
 
@@ -248,7 +271,7 @@ TEST_F(BBCylinderTest, bback_cylinder_pbc6)
   double currsdf = collision->computeSDF(pos);
   collision->bounceBack(currsdf, dt, pos, vel);
   MathVector3D diff = pos - MathVector3D(-4.5754562441755819, 3.8773540850173442, 0.8014143976);
-  collision->applyPBC(diff);
+  //collision->applyPBC(diff);
   EXPECT_TRUE( diff.getLength() < tolerance );
 }
 
@@ -263,7 +286,7 @@ TEST(CollisionTest, bback_two_planes)
   Grid3D<double> grid(n, m, w, Box3D(10.0, 10.0, 10.0));
   fill.run(grid);
 
-  Collision collision(&grid);
+  CollisionBasic collision(&grid);
 
   // perpendicular to plane
   double dt = 1.0;
@@ -311,7 +334,7 @@ TEST(CollisionTest, bback_multiplereflections)
   Grid3D<double> grid(n, m, w, Box3D(20.0, 20.0, 20.0));
   fill.run(grid);
 
-  Collision collision(&grid);
+  CollisionBasic collision(&grid);
 
   // perpendicular to plane, two reflections
   double dt = 1.0;
@@ -329,23 +352,6 @@ TEST(CollisionTest, bback_multiplereflections)
   collision.bounceBack(currsdf, dt, pos, vel);
 
   EXPECT_TRUE( (pos - MathVector3D(0.0, -0.002, 0.0)).getLength() < tolerance );
-}
-
-TEST(CollisionTest, bback_square)
-{
-  using namespace ls;
-  const double tolerance = 1e-4;
-  size_t n = 64, m = 64, w = 64;
-  IImplicitFunctionDPtr func( new Square<double>(5.0) );
-  FillInGrid fill(func);
-
-  Grid3D<double> grid(n, m, w, Box3D(15.0, 15.0, 15.0));
-  fill.run(grid);
-
-  BasicSerializerHDF5 writer(grid, "test-aux/square", "data");
-  writer.run();
-
-  Collision collision(&grid);
 }
 
 /*

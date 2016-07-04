@@ -8,6 +8,8 @@
 #include <random> //c++11
 #include "linear_interpolator.h"
 #include "basic_access_strategy.h"
+#include <implicit_functions.h>
+#include <grid_operations.h>
 
 typedef ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > _BasicLinInterpolator;
 
@@ -198,40 +200,47 @@ TEST(InterpolatorTest, notOriginPlacedCuboid)
   }
 }
 
-/**
- * AccessStrategy for periodic domain. Points may be out of the domain cube
- * so index at getValue is also out of range
- */
-template<class T>
-class PeriodicReadAS
+TEST(InterpolatorTest, periodicAccessStrategy2)
 {
-protected:
-  typedef ls::Grid3D<T> _Grid;
-  const _Grid& m_grid;
+  using namespace ls;
+  size_t n = 64, m = 64, w = 64;
 
-  explicit PeriodicReadAS(const _Grid& grid)
-  : m_grid(grid)
-  {
-  }
+  IImplicitFunctionDPtr func( new AxialCylinderD(zDim, 2.0) );
+  FillInGrid fill(func);
 
-  size_t mapIndex(int inputIndex, size_t dimInd) const
-  {
-    int gsize = static_cast<int>(m_grid.size(dimInd));
-    inputIndex %= gsize - 1;
-    if (inputIndex < 0)
-      inputIndex += gsize - 1;
-    return static_cast<size_t>(inputIndex);
-  }
+  Grid3D<double> grid(n, m, w, Box3D(5.0, 5.0, 5.0));
+  fill.run(grid);
 
-  T getValue(size_t i, size_t j, size_t k) const
+  ls::LinearInterpolator< double, PeriodicReadAS > li(grid);
+
+  // check on the border
   {
-    // handle this condition to correctly compute value on the border
-    if (i >= m_grid.size(0) || j >= m_grid.size(1) || k >= m_grid.size(2)) {
-      return T(0.0);
+    MathVector3D p = MathVector3D(0.0, 0.0, 0.0);
+    const double exp = li.compute( p );
+
+    for (int i = 0; i < 5; ++i) {
+      MathVector3D shift(0.0, 0.0, 2.5 + i*10);
+      EXPECT_LT( fabs(li.compute( p + shift ) - exp), tolerance);
+      EXPECT_LT( fabs(li.compute( p - shift ) - exp), tolerance);
     }
-    return m_grid(i, j, k);
   }
-};
+
+  std::default_random_engine generator;
+  std::uniform_real_distribution<double> distribution(-2.5, 2.5);
+  for (int k = 0; k < 100; ++k) {
+    MathVector3D p = MathVector3D(distribution(generator), distribution(generator), distribution(generator));
+    const double exp = li.compute( p );
+
+    for (int i = 0; i < 5; ++i) {
+      MathVector3D shift;
+      for (int dim = 0; dim < 3; ++dim) {
+        shift.setCoord(dim, 5.0 + i*10);
+        EXPECT_LT( fabs(li.compute( p + shift ) - exp), tolerance);
+        EXPECT_LT( fabs(li.compute( p - shift ) - exp), tolerance);
+      }
+    }
+  }
+}
 
 TEST(InterpolatorTest, periodicAccessStrategy)
 {
