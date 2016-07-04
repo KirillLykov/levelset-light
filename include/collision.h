@@ -32,36 +32,11 @@ class Collision : private ls::LinearInterpolator<T,AccessStrategy>
   const T m_tolerance;
 
 public:
-  MathVector3D computeCGrad(const MathVector3D& point) const
-  {
-    return m_grad.compute_central(point);;
-  }
-
-  MathVector3D computeFGrad(const MathVector3D& point) const
-  {
-    return m_grad.compute_forward(point);;
-  }
-
-  MathVector3D computeBGrad(const MathVector3D& point) const
-  {
-    return m_grad.compute_backward(point);;
-  }
-
-  MathVector3D computePreciseGrad(const MathVector3D& point) const
-  {
-    return m_grad.compute_precise(point);
-  }
-
-  MathVector3D computeBiasedGrad(const MathVector3D& point, const MathVector3D& vel) const
-  {
-    return m_grad.compute_biased(point, vel);;
-  }
-
   MathVector3D computeGrad(const MathVector3D& point) const
   {
-    MathVector3D grad = computeFGrad(point);
+    MathVector3D grad = m_grad.compute_forward(point);
     if ( fabs(grad*grad - T(1.0)) > T(0.2)) {
-      grad = computePreciseGrad(point);
+      grad = m_grad.compute_precise(point);
       grad.normalize();
     }
     return grad;
@@ -137,20 +112,20 @@ public:
     size_t nmultipleReflections = 0; // to tackle multiple reflections
     do
     {
-      //if (currsdf < 0) {
-        //std::cout << "currsdf < 0| " << currsdf << " " << dt << " " << nmultipleReflections << "\n";
-        //std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-        //std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
-      //}
+      if (currsdf < 0) {
+        std::cout << "currsdf < 0| " << currsdf << " " << dt << " " << nmultipleReflections << "\n";
+        std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
+        std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
+      }
 
       assert(currsdf >= 0.0);
 
       posOld = pos - dt * vel;
 
       if (computeSDF(posOld) > 0.0) {
-        //std::cout << "computeSDF(posOld) >= 0| " << computeSDF(posOld) << " " << dt << " " << nmultipleReflections << "\n";
-        //std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-        //std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
+        std::cout << "computeSDF(posOld) >= 0| " << computeSDF(posOld) << " " << dt << " " << nmultipleReflections << "\n";
+        std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
+        std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
 
         rescueParticle(currsdf, posOld);
         pos = posOld;
@@ -194,7 +169,7 @@ public:
       dt -= subdt;
       currsdf = computeSDF(pos);
       ++nmultipleReflections;
-    } while (currsdf >= 0 && nmultipleReflections < 5);
+    } while (currsdf >= 0.0 && nmultipleReflections < 5);
 
     if (currsdf > -m_tolerance && currsdf < 0.0)
     {

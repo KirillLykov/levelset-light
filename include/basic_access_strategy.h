@@ -34,6 +34,7 @@ namespace ls
   class BasicReadAccessStrategy
   {
   protected:
+
     typedef Grid3D<T> _Grid;
     const _Grid& m_grid;
 
@@ -42,7 +43,7 @@ namespace ls
     {
     }
 
-    MathVector<T, 3> getRelativePosition(const MathVector<T, 3>& point) const
+    geometry_utils::MathVector<T, 3> getRelativePosition(const geometry_utils::MathVector<T, 3>& point) const
     {
       return point - m_grid.getBoundingBox().getLow();
     }
@@ -101,9 +102,9 @@ namespace ls
       m_bbox = m_grid.getBoundingBox();
     }
 
-    MathVector<T, 3> getRelativePosition(const MathVector<T, 3>& point) const
+    geometry_utils::MathVector<T, 3> getRelativePosition(const geometry_utils::MathVector<T, 3>& point) const
     {
-      MathVector<T, 3> res = point;
+      geometry_utils::MathVector<T, 3> res = point;
       m_bbox.applyPBC(res);
       res -= m_bbox.getLow();
       res.max(T(0.0));

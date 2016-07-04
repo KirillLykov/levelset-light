@@ -66,10 +66,8 @@ TEST_F(BBCylinderTest, bback_cylinder_pbc1)
 
   //collision->applyPBC(pos);
   double currsdf = collision->computeSDF(pos);
-  std::cout << currsdf << " AAAA\n";
   collision->bounceBack(currsdf, dt, pos, vel);
 
-  std::cout << "BBBB\n";
   MathVector3D diff = pos - MathVector3D(-4.0492098, -4.4236375, 16-8.0025063);
   //collision->applyPBC(diff);
   EXPECT_TRUE( diff.getLength() < tolerance );
