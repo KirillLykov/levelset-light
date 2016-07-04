@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include <math_vector.h>
+#include <implicit_functions.h>
 
 namespace
 {
@@ -26,6 +27,42 @@ namespace
     double res = sin(point.getX()) + cos(point.getY()) - log(fabs(point.getZ())) / (point.getZ() + 1.0);
     return res;
   }
+
+  template<typename T>
+  class RecPipe : public IImplicitFunction<T>
+  {
+    T m_d;
+  public:
+    RecPipe(T d) : m_d(d) {}
+    T compute(const MathVector<T, 3>& point) const
+    {
+      return fabs(point.getX()) + fabs(point.getY()) - m_d;
+    }
+  };
+
+  template<typename T>
+  class Square : public IImplicitFunction<T>
+  {
+    T m_d;
+  public:
+    Square(T d) : m_d(d) {}
+    T compute(const MathVector<T, 3>& point) const
+    {
+      return fabs(point.getX()) + fabs(point.getY()) + fabs(point.getZ()) - m_d;
+    }
+  };
+
+  template<typename T>
+  class TwoPlanceInY : public IImplicitFunction<T>
+  {
+    T m_d;
+  public:
+    TwoPlanceInY(T d) : m_d(d) {}
+    T compute(const MathVector<T, 3>& point) const
+    {
+      return fabs(point.getY()) - m_d;
+    }
+  };
 }
 
 // to run all tests from one point

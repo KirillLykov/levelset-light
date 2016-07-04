@@ -21,11 +21,11 @@ namespace ls
 using namespace ls::geometry_utils;
 
 template <typename T, template<typename X> class AccessStrategy>
-class Collision : public ls::LinearInterpolator<T,AccessStrategy>
+class Collision : private ls::LinearInterpolator<T,AccessStrategy>
 {
-  typedef ls::LinearInterpolator<T,AccessStrategy> _LI;
+  typedef ls::LinearInterpolator<T, AccessStrategy> _LI;
   typedef ls::Grid3D<T> _LSGrid;
-  typedef ls::Grad<T, AccessStrategy > _BasicGrad;
+  typedef ls::Grad<T, AccessStrategy> _BasicGrad;
 
   _LSGrid* m_grid; // grid is stored somewhere else, don't clean it
   _BasicGrad m_grad;
@@ -34,75 +34,27 @@ class Collision : public ls::LinearInterpolator<T,AccessStrategy>
 public:
   MathVector3D computeCGrad(const MathVector3D& point) const
   {
-    MathVector3D grad;
-    if (!m_grid->getBoundingBox().inside(point))
-      grad = MathVector3D(-std::numeric_limits<double>::infinity());
-    else {
-      grad = m_grad.compute_central(point);
-    }
-    return grad;
+    return m_grad.compute_central(point);;
   }
 
   MathVector3D computeFGrad(const MathVector3D& point) const
   {
-    MathVector3D grad;
-    if (!m_grid->getBoundingBox().inside(point))
-      grad = MathVector3D(-std::numeric_limits<double>::infinity());
-    else {
-      grad = m_grad.compute_forward(point);
-    }
-    return grad;
+    return m_grad.compute_forward(point);;
   }
 
   MathVector3D computeBGrad(const MathVector3D& point) const
   {
-    MathVector3D grad;
-    if (!m_grid->getBoundingBox().inside(point))
-      grad = MathVector3D(-std::numeric_limits<double>::infinity());
-    else {
-      grad = m_grad.compute_backward(point);
-    }
-    return grad;
+    return m_grad.compute_backward(point);;
+  }
+
+  MathVector3D computePreciseGrad(const MathVector3D& point) const
+  {
+    return m_grad.compute_precise(point);
   }
 
   MathVector3D computeBiasedGrad(const MathVector3D& point, const MathVector3D& vel) const
   {
-    MathVector3D grad;
-    if (!m_grid->getBoundingBox().inside(point))
-      grad = MathVector3D(-std::numeric_limits<double>::infinity());
-    else {
-      grad = m_grad.compute_biased(point, vel);
-    }
-    return grad;
-  }
-
-  // expensive way to compute gradient, when |computeFGrad()| > 1
-  //from the paper "Adaptively Sampled Distance Fields : A General Representation of Shape for Computer Graphics"
-  geometry_utils::MathVector3D computePreciseGrad(const geometry_utils::MathVector3D& point) const
-  {
-    Box3D bb = m_grid->getBoundingBox();
-    assert(bb.inside(point));
-
-    // work with Cartesian with origin in left bottom point of the domain
-    // thus shift the input point. Then fin index of the cell where the point is.
-    geometry_utils::MathVector3D relativePosition = point - bb.getLow();
-    geometry_utils::MathVector3D grad;
-    for (size_t i = 0; i < 3; ++i) {
-      T h =  static_cast<T>(bb.getIthSize(i)) / (m_grid->size(i) - T(1.0));
-      T index = _LI::mapIndex( static_cast<int>(relativePosition.getCoord(i) / h ), i );
-
-      geometry_utils::MathVector3D p1 = point;
-      p1.setCoord(i, index*h +  bb.getLow().getCoord(i));
-      //bb.applyPBC(p1);
-
-      geometry_utils::MathVector3D p2 = point;
-      p2.setCoord(i, (index+1)*h  +  bb.getLow().getCoord(i));
-      //bb.applyPBC(p2);
-
-      grad.setCoord(i, (_LI::compute(p2) - _LI::compute(p1)) / h);
-    }
-
-    return grad;
+    return m_grad.compute_biased(point, vel);;
   }
 
   MathVector3D computeGrad(const MathVector3D& point) const

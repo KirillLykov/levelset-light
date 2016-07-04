@@ -16,6 +16,7 @@ namespace ls
   template < typename T, template<typename X>  class AccessStrategy >
   class LinearInterpolator : public AccessStrategy<T>
   {
+  protected:
     typedef AccessStrategy<T> _AS;
     typedef typename _AS::_Grid _Grid;
 
