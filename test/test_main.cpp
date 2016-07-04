@@ -43,12 +43,12 @@ namespace
   template<typename T>
   class Square : public IImplicitFunction<T>
   {
-    T m_d;
+    T m_d, m_sign;
   public:
-    Square(T d) : m_d(d) {}
+    Square(T d, T sign = 1.0) : m_d(d), m_sign(sign) {}
     T compute(const MathVector<T, 3>& point) const
     {
-      return fabs(point.getX()) + fabs(point.getY()) + fabs(point.getZ()) - m_d;
+      return m_sign*(fabs(point.getX()) + fabs(point.getY()) + fabs(point.getZ()) - m_d);
     }
   };
 

@@ -30,6 +30,7 @@ class Collision : private ls::LinearInterpolator<T,AccessStrategy>
   _LSGrid* m_grid; // grid is stored somewhere else, don't clean it
   _BasicGrad m_grad;
   const T m_tolerance;
+  T m_diagLenght;
 
 public:
   MathVector3D computeGrad(const MathVector3D& point) const
@@ -45,6 +46,10 @@ public:
   Collision(_LSGrid* grid)
   : _LI(*grid), m_grid(grid), m_grad(*m_grid), m_tolerance(1e-4)
   {
+    T res = 0.0;
+    for (size_t i = 0; i < 3; ++i)
+      res += pow(_LI::h[i], 2);
+    m_diagLenght = sqrt(res);
   }
 
   /*
@@ -76,6 +81,12 @@ public:
     return dist;
   }
 
+  // if it is true than it might be that the point require bounce back
+  bool cheapOutsideCheck(const MathVector3D& point) const
+  {
+    return computeCheapSDF(point) >= -m_diagLenght;
+  }
+
   T computeSDF(const MathVector3D& point) const
   {
     return _LI::compute(point);
@@ -105,7 +116,7 @@ public:
 
   void bounceBack(T currsdf, double dt, MathVector3D& pos, MathVector3D& vel)
   {
-    MathVector3D origpos = pos; MathVector3D origvel = vel;
+    MathVector3D origpos = pos; MathVector3D origvel = vel; // to debug
     using namespace ls::geometry_utils::raw_math_vector;
     T subdt = dt;
     MathVector3D posOld, grad;
@@ -114,8 +125,6 @@ public:
     {
       if (currsdf < 0) {
         std::cout << "currsdf < 0| " << currsdf << " " << dt << " " << nmultipleReflections << "\n";
-        std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-        std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
       }
 
       assert(currsdf >= 0.0);
@@ -124,8 +133,6 @@ public:
 
       if (computeSDF(posOld) > 0.0) {
         std::cout << "computeSDF(posOld) >= 0| " << computeSDF(posOld) << " " << dt << " " << nmultipleReflections << "\n";
-        std::cout << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-        std::cout << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
 
         rescueParticle(currsdf, posOld);
         pos = posOld;
@@ -175,8 +182,6 @@ public:
     {
       //std::cout << "fabs(currsdf) <= m_tolerance " << currsdf << " " << nmultipleReflections << "\n";
       shiftInside(currsdf, grad, pos);
-      //std::cout << std::setprecision(16) << origpos.getX() << " " << origpos.getY() << " " << origpos.getZ() <<"\n";
-      //std::cout << std::setprecision(16) << origvel.getX() << " " << origvel.getY() << " " << origvel.getZ() <<"\n";
       assert(computeSDF(pos) < 0);
     }
 
@@ -189,6 +194,26 @@ public:
     }
 
     return;
+  }
+
+  // assumed to be called only for those edges which are in proximity to the interface
+  // idea is from Fuhrmann et al. "Distance Fields for Rapid Collision Detection in Physically Based Modeling"
+  // left and right vtx forming an edge
+  void bounceBackEdge(double dt, MathVector3D& posleft, MathVector3D& velleft, MathVector3D& posright, MathVector3D& velright)
+  {
+    assert(computeSDF(posleft) < 0.0 && computeSDF(posright) < 0.0);
+    const MathVector3D posmiddle = 0.5*(posleft + posright);
+    MathVector3D velmiddle = 0.5*(velleft + velright);
+
+    if (cheapOutsideCheck(posmiddle)) {
+      MathVector3D bbpos = posmiddle;
+      bounceBack(computeSDF(bbpos), dt, bbpos, velmiddle);
+      MathVector3D shift = bbpos - posmiddle;
+      posleft += shift;
+      velleft *= -1.0;
+      posright += shift;
+      velright *= -1.0;
+    }
   }
 
 };

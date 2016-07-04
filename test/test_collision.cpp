@@ -218,6 +218,51 @@ TEST(CollisionTest, bback_multiplereflections)
   EXPECT_TRUE( (pos - MathVector3D(0.0, -0.002, 0.0)).getLength() < tolerance );
 }
 
+TEST(CollisionTest, bback_edge)
+{
+  using namespace ls;
+  const double tolerance = 0.25;
+  size_t n = 128, m = 128, w = 128;
+  IImplicitFunctionDPtr func( new Square<double>(5.0, -1.0) );
+  FillInGrid fill(func);
+
+  Grid3D<double> grid(n, m, w, Box3D(15.0, 15.0, 15.0));
+  fill.run(grid);
+  CollisionBasic collision(&grid);
+
+  double dt = 1e-3;
+  // rescue edge
+  {
+    MathVector3D posleft(-5.0, 2.5, 0.0);
+    EXPECT_FALSE(collision.cheapOutsideCheck(posleft));
+    MathVector3D velleft(0.0, -1.0, 0);
+    MathVector3D posright(5.0, 2.5, 0.0);
+    EXPECT_FALSE(collision.cheapOutsideCheck(posright));
+    MathVector3D velright(0.0, -1.0, 0);
+    collision.bounceBackEdge(dt, posleft, velleft, posright, velright);
+    EXPECT_LT( (posleft - MathVector3D(-5.0, 5.0, 0.0)).getLength(), tolerance);
+    EXPECT_LT( (posright - MathVector3D(5.0, 5.0, 0.0)).getLength(), tolerance);
+    EXPECT_LT( (velleft - MathVector3D(0.0, 1.0, 0.0)).getLength(), tolerance);
+    EXPECT_LT( (velright - MathVector3D(0.0, 1.0, 0.0)).getLength(), tolerance);
+  }
+
+  dt = 1.0;
+  // reflect edge
+  {
+    MathVector3D posleft(-5.0, 4.0, 0.0);
+    EXPECT_FALSE(collision.cheapOutsideCheck(posleft));
+    MathVector3D velleft(0.0, -2.0, 0);
+    MathVector3D posright(5.0, 4.0, 0.0);
+    EXPECT_FALSE(collision.cheapOutsideCheck(posright));
+    MathVector3D velright(0.0, -2.0, 0);
+    collision.bounceBackEdge(dt, posleft, velleft, posright, velright);
+    EXPECT_LT( (posleft - MathVector3D(-5.0, 6.0, 0.0)).getLength(), tolerance);
+    EXPECT_LT( (posright - MathVector3D(5.0, 6.0, 0.0)).getLength(), tolerance);
+    EXPECT_LT( (velleft - MathVector3D(0.0, 2.0, 0.0)).getLength(), tolerance);
+    EXPECT_LT( (velright - MathVector3D(0.0, 2.0, 0.0)).getLength(), tolerance);
+  }
+}
+
 /*
 template<typename T>
 class ThinLayer : public IImplicitFunction<T>
