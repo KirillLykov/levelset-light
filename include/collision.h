@@ -67,18 +67,12 @@ public:
   // Just value in the left bottom corner of the cell where the point is
   double computeCheapSDF(const MathVector3D& point) const
   {
-    T dist;
-    if (!m_grid->getBoundingBox().inside(point))
-     dist = -std::numeric_limits<double>::infinity();
-    else {
-     ls::geometry_utils::MathVector3D relativePosition = point - m_grid->getBoundingBox().getLow();
+    ls::geometry_utils::MathVector3D relativePosition = _LI::getRelativePosition(point);;
 
-     size_t index[3];
-     _LI::computeIndex(relativePosition, index);
-     assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
-     dist = (*m_grid)(index[0], index[1], index[2]);
-    }
-    return dist;
+    size_t index[3];
+    _LI::computeIndex(relativePosition, index);
+    assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
+    return  (*m_grid)(index[0], index[1], index[2]);;
   }
 
   // if it is true than it might be that the point require bounce back
@@ -116,24 +110,18 @@ public:
 
   void bounceBack(T currsdf, double dt, MathVector3D& pos, MathVector3D& vel)
   {
-    MathVector3D origpos = pos; MathVector3D origvel = vel; // to debug
+    //MathVector3D origpos = pos; MathVector3D origvel = vel; // to debug
     using namespace ls::geometry_utils::raw_math_vector;
     T subdt = dt;
     MathVector3D posOld, grad;
     size_t nmultipleReflections = 0; // to tackle multiple reflections
     do
     {
-      if (currsdf < 0) {
-        std::cout << "currsdf < 0| " << currsdf << " " << dt << " " << nmultipleReflections << "\n";
-      }
-
       assert(currsdf >= 0.0);
 
       posOld = pos - dt * vel;
 
       if (computeSDF(posOld) > 0.0) {
-        std::cout << "computeSDF(posOld) >= 0| " << computeSDF(posOld) << " " << dt << " " << nmultipleReflections << "\n";
-
         rescueParticle(currsdf, posOld);
         pos = posOld;
         vel *= -1.0;
@@ -180,7 +168,6 @@ public:
 
     if (currsdf > -m_tolerance && currsdf < 0.0)
     {
-      //std::cout << "fabs(currsdf) <= m_tolerance " << currsdf << " " << nmultipleReflections << "\n";
       shiftInside(currsdf, grad, pos);
       assert(computeSDF(pos) < 0);
     }
@@ -206,13 +193,16 @@ public:
     MathVector3D velmiddle = 0.5*(velleft + velright);
 
     if (cheapOutsideCheck(posmiddle)) {
-      MathVector3D bbpos = posmiddle;
-      bounceBack(computeSDF(bbpos), dt, bbpos, velmiddle);
-      MathVector3D shift = bbpos - posmiddle;
-      posleft += shift;
-      velleft *= -1.0;
-      posright += shift;
-      velright *= -1.0;
+      double dist = computeSDF(posmiddle);
+      if (dist >= 0.0) {
+        MathVector3D bbpos = posmiddle;
+        bounceBack(dist, dt, bbpos, velmiddle);
+        MathVector3D shift = bbpos - posmiddle;
+        posleft += shift;
+        velleft *= -1.0;
+        posright += shift;
+        velright *= -1.0;
+      }
     }
   }
 
