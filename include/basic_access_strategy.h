@@ -115,9 +115,9 @@ namespace ls
     {
       // it is needed for the interpolation
       int gsize = static_cast<int>(m_grid.size(dimInd));
-      inputIndex %= gsize - 1;
+      inputIndex %= gsize; //gsize - 1;
       while (inputIndex < 0)
-        inputIndex += gsize - 1;
+        inputIndex += gsize; //gsize - 1;
       return static_cast<size_t>(inputIndex);
     }
 

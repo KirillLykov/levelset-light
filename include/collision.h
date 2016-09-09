@@ -52,18 +52,6 @@ public:
     m_diagLenght = sqrt(res);
   }
 
-  /*
-  void applyPBC(double coord[3]) const
-  {
-    m_grid->getBoundingBox().applyPBC(coord);
-  }
-
-  void applyPBC(MathVector3D& coord) const
-  {
-    m_grid->getBoundingBox().applyPBC(coord);
-  }
-  */
-
   // Just value in the left bottom corner of the cell where the point is
   double computeCheapSDF(const MathVector3D& point) const
   {
@@ -84,7 +72,6 @@ public:
   T computeSDF(const MathVector3D& point) const
   {
     return _LI::compute(point);
-    //return fabs(dist) < m_tolerance ? 0.0 : dist;
   }
 
   // it should be called rarely, happens due to numerical reasons
@@ -146,13 +133,11 @@ public:
 
         MathVector3D xstarNew = posOld + subdt * vel;
         MathVector3D diffXstar = xstar - xstarNew;
-        //applyPBC(diffXstar);
         T diff2 = diffXstar * diffXstar;
         if (diff2 < m_tolerance*m_tolerance)
           break;
 
         xstar = xstarNew;
-        //applyPBC(xstar);
         xstarSdf = computeSDF(xstar);
       }
 

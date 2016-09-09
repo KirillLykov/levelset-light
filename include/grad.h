@@ -130,11 +130,9 @@ namespace ls
 
         MV p1 = point;
         p1.setCoord(i, index*h +  bb.getLow().getCoord(i));
-        //bb.applyPBC(p1);
 
         MV p2 = point;
         p2.setCoord(i, (index+1)*h  +  bb.getLow().getCoord(i));
-        //bb.applyPBC(p2);
 
         grad.setCoord(i, (_LI::compute(p2) - _LI::compute(p1)) / h);
       }
