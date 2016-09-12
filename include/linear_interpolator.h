@@ -21,7 +21,7 @@ namespace ls
     typedef typename _AS::_Grid _Grid;
 
     geometry_utils::Box3D m_bbox; // bounding box for grid
-    double h[3];
+    T h[3];
 
   public:
     LinearInterpolator(const _Grid& grid)
@@ -31,7 +31,7 @@ namespace ls
         h[i] = m_bbox.getIthSize(i) / (_AS::m_grid.size(i) - T(1.0));
     }
 
-    double compute(T x, T y, T z) const
+    T compute(T x, T y, T z) const
     {
       geometry_utils::MathVector3D point(x, y, z);
       return compute(point);
@@ -47,7 +47,7 @@ namespace ls
       assert(index[0] < _AS::m_grid.size(0) && index[1] < _AS::m_grid.size(1) && index[2] < _AS::m_grid.size(2));
     }
 
-    double compute(const geometry_utils::MathVector3D& point) const
+    T compute(const geometry_utils::MathVector3D& point) const
     {
       //assert(m_bbox.inside(point));
 
@@ -68,11 +68,11 @@ namespace ls
       * Interpolate using trilinear interpolation method
       * names of variables are from http://en.wikipedia.org/wiki/Trilinear_interpolation
       */
-     double trilin_interp(const geometry_utils::MathVector3D& inputPoint, const size_t* index) const
+     T trilin_interp(const geometry_utils::MathVector3D& inputPoint, const size_t* index) const
      {
        geometry_utils::MathVector3D x0(index[0] * h[0], index[1] * h[1], index[2] * h[2]);
        geometry_utils::MathVector3D xd = inputPoint - x0;
-       double c[2][2];
+       T c[2][2];
        for (size_t i = 0; i < 2; ++i) {
          for (size_t j = 0; j < 2; ++j) {
            c[i][j] = _AS::getValue(index[0], index[1] + i, index[2] + j) * (h[0] - xd.getX()) +
@@ -80,10 +80,10 @@ namespace ls
          }
        }
 
-       double c0 = c[0][0] * (h[1] - xd.getY()) + c[1][0] * xd.getY();
-       double c1 = c[0][1] * (h[1] - xd.getY()) + c[1][1] * xd.getY();
+       T c0 = c[0][0] * (h[1] - xd.getY()) + c[1][0] * xd.getY();
+       T c1 = c[0][1] * (h[1] - xd.getY()) + c[1][1] * xd.getY();
 
-       double res = 1.0 / h[0] / h[1] / h[2] * (c0 * (h[2] - xd.getZ()) + c1 * xd.getZ());
+       T res = 1.0 / h[0] / h[1] / h[2] * (c0 * (h[2] - xd.getZ()) + c1 * xd.getZ());
        return res;
      }
   };

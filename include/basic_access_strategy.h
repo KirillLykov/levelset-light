@@ -115,16 +115,17 @@ namespace ls
     {
       // it is needed for the interpolation
       int gsize = static_cast<int>(m_grid.size(dimInd));
-      inputIndex %= gsize; //gsize - 1;
-      while (inputIndex < 0)
-        inputIndex += gsize; //gsize - 1;
+      inputIndex %= gsize;
+      assert(inputIndex >= 0);
+      //while (inputIndex < 0)
+      //  inputIndex += gsize; //gsize - 1;
       return static_cast<size_t>(inputIndex);
     }
 
     T getValue(size_t i, size_t j, size_t k) const
     {
-      assert (i < m_grid.size(0) && j < m_grid.size(1) && k < m_grid.size(2));
-      return m_grid(i, j, k);
+      // it can be greater, just remap assert (i < m_grid.size(0) && j < m_grid.size(1) && k < m_grid.size(2));
+      return m_grid( mapIndex(i, 0), mapIndex(j, 1), mapIndex(k, 2) );
     }
   };
 
