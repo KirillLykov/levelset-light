@@ -72,8 +72,8 @@ namespace ls
 
       T val = _LI::getValue(index[0], index[1], index[2]);
       return MV(db<1,0,0>(index, val)/_LI::h[0],
-                                          db<0,1,0>(index, val)/_LI::h[1],
-                                          db<0,0,1>(index, val)/_LI::h[2]);
+                db<0,1,0>(index, val)/_LI::h[1],
+                db<0,0,1>(index, val)/_LI::h[2]);
     }
 
     MV compute_forward(const MV& point) const
@@ -89,8 +89,8 @@ namespace ls
 
       T val = _LI::getValue(index[0], index[1], index[2]);
       return MV(df<1,0,0>(index, val)/_LI::h[0],
-                                   df<0,1,0>(index, val)/_LI::h[1],
-                                   df<0,0,1>(index, val)/_LI::h[2]);
+                df<0,1,0>(index, val)/_LI::h[1],
+                df<0,0,1>(index, val)/_LI::h[2]);
     }
 
     MV compute_central(const MV& point) const

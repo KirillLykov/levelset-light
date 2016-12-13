@@ -60,7 +60,7 @@ public:
     size_t index[3];
     _LI::computeIndex(relativePosition, index);
     assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
-    return  (*m_grid)(index[0], index[1], index[2]);;
+    return  (*m_grid)(index[0], index[1], index[2]);
   }
 
   // if it is true than it might be that the point require bounce back
