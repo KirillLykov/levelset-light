@@ -1,9 +1,0 @@
-====== TODO list ======
-
-1) Add solvers of level set equations
-2) Add more memory-efficient data structures for level set functions
-3) Add levelset class based on the Grid but having information about domain
-5) Add iterators on grids
-9) Add a makefile for tests
-10) Add build/usag documentatione
-11) Extend grid to work with any structure (not just primitive types)
