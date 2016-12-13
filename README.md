@@ -11,6 +11,7 @@ where \<libname\> ::= VTK | HDF5 | OPENVDB.
 VTK and hdf5 files might be visualized by Paraview, while openvdb file might be opened by Houdini with openvdb_houdini plugin.
 
 My typical usage of this code is the following:
+
 1. generate geometry in hdf5 format
 2. run particle-based simulation (using different solvers like LAMMPS) in the geomtry described by this Signed distance function: particles which have position with negative sdf are free, others - frozen.
 
