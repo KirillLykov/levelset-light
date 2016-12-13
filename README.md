@@ -16,6 +16,7 @@ My typical usage of this code is the following:
 2. run particle-based simulation (using different solvers like LAMMPS) in the geomtry described by this Signed distance function: particles which have position with negative sdf are free, others - frozen.
 
 This approach was used, in particular, for this simulaiton (click image to see the video):
+
 [![](http://lammps.sandia.gov/images/blood_small.png)](http://lammps.sandia.gov/movies/blood.mp4 "RBC simulation")
 
 
