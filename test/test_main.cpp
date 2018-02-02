@@ -72,15 +72,15 @@ namespace
 #include "test_grid.cpp"
 
 #ifdef USE_HDF5
-#include "test_hdf5.cpp"
+#include "test_HDF5.cpp"
 #endif
 
 #ifdef USE_VTK
-#include "test_vtk.cpp"
+#include "test_VTK.cpp"
 #endif
 
 #ifdef USE_VDB
-#include "test_vdb.cpp"
+#include "test_VDB.cpp"
 #endif
 
 #include "test_geometry_utils.cpp"

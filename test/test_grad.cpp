@@ -6,7 +6,7 @@
 #include <grid.h>
 #include <iostream>
 #include <random> //c++11
-#include "Grad.h"
+#include "grad.h"
 #include "basic_access_strategy.h"
 typedef ls::Grad<double, ls::BasicReadAccessStrategy > _BasicGrad;
 typedef ls::Grad<double, ls::PeriodicReadAS > _PeriodicGrad;

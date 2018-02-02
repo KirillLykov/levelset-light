@@ -35,11 +35,11 @@ TEST(HDF5Test, writeAndRead1)
     }
   }
 
-  BasicSerializerHDF5 writer(grid, "test-aux/writeAndRead1", "data");
+  BasicSerializerHDF5 writer(grid, "../test-aux/writeAndRead1", "data");
   writer.run();
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  BasicDeserializerHDF5 reader(readGrid, "test-aux/writeAndRead1", "data");
+  BasicDeserializerHDF5 reader(readGrid, "../test-aux/writeAndRead1", "data");
   reader.run();
 
   EXPECT_EQ(grid, readGrid);
@@ -59,11 +59,11 @@ TEST(HDF5Test, writeAndRead2)
     }
   }
 
-  BasicSerializerHDF5 writer(grid, "test-aux/writeAndRead2", "data");
+  BasicSerializerHDF5 writer(grid, "../test-aux/writeAndRead2", "data");
   writer.run();
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  BasicDeserializerHDF5 reader(readGrid, "test-aux/writeAndRead2", "data");
+  BasicDeserializerHDF5 reader(readGrid, "../test-aux/writeAndRead2", "data");
   reader.run();
 
   EXPECT_EQ(grid, readGrid);
@@ -91,11 +91,11 @@ TEST(HDF5Test, writeAndRead3)
     }
   }
 
-  BasicSerializerHDF5 writer(grid, "test-aux/writeAndRead3", "data");
+  BasicSerializerHDF5 writer(grid, "../test-aux/writeAndRead3", "data");
   writer.run();
 
   Grid3D<double> readGrid; // at this point I don't know the size
-  BasicDeserializerHDF5 reader(readGrid, "test-aux/writeAndRead3", "data");
+  BasicDeserializerHDF5 reader(readGrid, "../test-aux/writeAndRead3", "data");
   reader.run();
 
   EXPECT_EQ(grid, readGrid);
