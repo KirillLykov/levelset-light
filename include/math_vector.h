@@ -26,7 +26,7 @@ namespace geometry_utils
     MathVector<T, Dim>& operator= (const MathVector<T, Dim>& toCopy);
     ~MathVector();
 
-    double getLength() const;
+    T getLength() const;
 
     void normalize();
 
@@ -88,9 +88,9 @@ namespace geometry_utils
       return m_data[index];
     }
 
-    double getLength() const
+    T getLength() const
     {
-      double result = 0;
+      T result(0.0);
       for (size_t i= 0; i < 2; ++i)
         result += m_data[i]*m_data[i];
 
@@ -154,7 +154,7 @@ namespace geometry_utils
       m_data[2] = z;
     }
 
-    MathVector(const double* block)
+    MathVector(const T* block)
     {
       raw_math_vector::copy(m_data, block);
     }
@@ -184,7 +184,7 @@ namespace geometry_utils
       return m_data[index];
     }
 
-    double getLength() const
+    T getLength() const
     {
       return raw_math_vector::length(m_data);
     }
@@ -279,9 +279,9 @@ namespace geometry_utils
   }
 
   template<class T, size_t Dim>
-  double MathVector<T,Dim>::getLength() const
+  T MathVector<T,Dim>::getLength() const
   {
-    double result = 0.0;
+    T result(0.0);
     for (size_t i = 0; i < Dim; ++i)
         result += m_data[i] * m_data[i];
 

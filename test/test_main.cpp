@@ -12,19 +12,31 @@
 #include <math_vector.h>
 #include <implicit_functions.h>
 
+#ifdef SINGLE_PRECISION
+typedef float Real;
+const Real abs_error = 1e-6;
+#else
+typedef double Real;
+const Real abs_error = 1e-12;
+#endif
+typedef ls::geometry_utils::MathVector<Real, 2> MathVector2R;
+typedef ls::geometry_utils::MathVector<Real, 3> MathVector3R;
+typedef ls::geometry_utils::Box<Real, 2> Box2R;
+typedef ls::geometry_utils::Box<Real, 3> Box3R;
+
 namespace
 {
   using namespace ls;
   using namespace geometry_utils;
 
-  double testFunction1(const MathVector3D& point) {
-    double r = 0.5;
-    double res = sqrt(pow(point.getX(), 2) + pow(point.getY(), 2) ) - r;
+  Real testFunction1(const MathVector3R& point) {
+    Real r = 0.5;
+    Real res = sqrt(pow(point.getX(), 2) + pow(point.getY(), 2) ) - r;
     return res;
   }
 
-  double testFunction2(const MathVector3D& point) {
-    double res = sin(point.getX()) + cos(point.getY()) - log(fabs(point.getZ())) / (point.getZ() + 1.0);
+  Real testFunction2(const MathVector3R& point) {
+    Real res = sin(point.getX()) + cos(point.getY()) - log(fabs(point.getZ())) / (point.getZ() + 1.0);
     return res;
   }
 
@@ -70,7 +82,7 @@ namespace
 // otherwise "duplicate symbol" linker error happens
 
 #include "test_grid.cpp"
-
+/*
 #ifdef USE_HDF5
 #include "test_HDF5.cpp"
 #endif
@@ -82,9 +94,9 @@ namespace
 #ifdef USE_VDB
 #include "test_VDB.cpp"
 #endif
-
+*/
 #include "test_geometry_utils.cpp"
-
+/*
 #include "test_linear_interpolator.cpp"
 
 #include "test_implicit_functions.cpp"
@@ -94,7 +106,7 @@ namespace
 #include "test_grad.cpp"
 
 #include "test_collision.cpp"
-
+*/
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

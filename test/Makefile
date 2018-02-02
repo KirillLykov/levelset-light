@@ -19,7 +19,7 @@ LIBS_PATH = -L/home/klykov/bin/gtest/lib -L/home/klykov/bin/hdf5/lib
 
 LIBS = -lgtest -lpthread -lhdf5 -lhdf5_cpp
 
-CCFLAGS = -std=c++11 -O0 -g -DUSE_HDF5
+CCFLAGS = -std=c++11 -O0 -g -DUSE_HDF5 -DSINGLE_PRECISION
 LINK = g++
 SRC = test_main.cpp
 OBJ = test_main.o

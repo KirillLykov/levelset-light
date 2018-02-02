@@ -13,18 +13,19 @@ namespace ls
  * class to check if two floating point numbers are the same.
  * For instance, if tolerance is 10e-11, then 1.2e-11 and 1.4e-11 cannot be distinguished
  */
+template<typename T>
 class Close_absolut
 {
-  const double m_tolerance;
+  const T m_tolerance;
 public:
-  explicit Close_absolut(double tolerance)
+  explicit Close_absolut(T tolerance)
   : m_tolerance(tolerance)
   {
   }
 
-  bool operator() (double left, double right) const
+  bool operator() (T left, T right) const
   {
-    double diff = fabs(left  - right);
+    T diff = fabs(left  - right);
     return diff < m_tolerance;
   }
 };
@@ -33,18 +34,19 @@ public:
  * class to check if two floating point numbers are the same.
  * For instance, if tolerance is 10e-11, then 1.2e-11 and 1.4e-11 will be distingueshed
  */
+template<typename T>
 class Close_relative
 {
-  const double m_tolerance;
+  const T m_tolerance;
 public:
-  explicit Close_relative(double tolerance)
+  explicit Close_relative(T tolerance)
   : m_tolerance(tolerance)
   {
   }
 
-  bool operator() (double left, double right) const
+  bool operator() (T left, T right) const
   {
-    double diff = fabs(left  - right);
+    T diff = fabs(left  - right);
     return (diff < m_tolerance * fabs(left)) && (diff < m_tolerance * fabs(right));
   }
 };
@@ -55,19 +57,36 @@ namespace {
    * wrapper around Close_at_tolerance used for sugar
    * TODO think about concurrency issues
    */
-  struct Tolerance
+  template<typename T>
+  struct Tolerance;
+  
+  template<>
+#ifdef SINGLE_PRECISION
+  struct Tolerance<float>
   {
-    static const double globalTolerance;
-    static const Close_absolut close_at_tol;
+  	typedef float T;
+#else
+  struct Tolerance<double>
+  {
+	typedef double T;
+#endif
+    static const T globalTolerance;
+    static const Close_absolut<T> close_at_tol;
 
-    static bool close(double left, double right)
+    static bool close(T left, T right)
     {
       return close_at_tol(left, right);
     }
   };
 
-  const double Tolerance::globalTolerance = 10e-10;
-  const Close_absolut Tolerance::close_at_tol(Tolerance::globalTolerance);
+#ifdef SINGLE_PRECISION
+  const float Tolerance<float>::globalTolerance = 1e-6f;
+  const Close_absolut<float> Tolerance<float>::close_at_tol(Tolerance::globalTolerance);
+#else
+  const double Tolerance<double>::globalTolerance = 1e-9;
+  const Close_absolut<double> Tolerance<double>::close_at_tol(Tolerance::globalTolerance);
+#endif
+
 }
 
 }

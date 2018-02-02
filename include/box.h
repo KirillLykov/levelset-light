@@ -30,9 +30,9 @@ namespace geometry_utils
     /**
      * Cube with center at origin
      */
-    Box(double domainSz)
+    Box(T domainSz)
     {
-      double half = domainSz / 2.0;
+      T half = domainSz / 2.0;
       for (size_t i = 0; i < Dim; ++i) {
         low.setCoord(i, -half);
         top.setCoord(i, half);
@@ -42,20 +42,20 @@ namespace geometry_utils
     /**
      * Cuboid with center at origin
      */
-    Box(const double* domainSz)
+    Box(const T* domainSz)
     {
       for (size_t i = 0; i < Dim; ++i) {
-        double half = domainSz[i] / 2.0;
+        T half = domainSz[i] / 2.0;
         low.setCoord(i, -half);
         top.setCoord(i, half);
       }
     }
 
-    Box(double domainSzX, double domainSzY, double domainSzZ = 0.0)
+    Box(T domainSzX, T domainSzY, T domainSzZ = T(0.0))
     {
-      double domainSz[] = {domainSzX, domainSzY, domainSzZ};
+      T domainSz[] = {domainSzX, domainSzY, domainSzZ};
       for (size_t i = 0; i < Dim; ++i) {
-        double half = domainSz[i] / 2.0;
+        T half = domainSz[i] / 2.0;
         low.setCoord(i, -half);
         top.setCoord(i, half);
       }
@@ -90,28 +90,28 @@ namespace geometry_utils
       return *this;
     }
 
-    double getIthSize(size_t i) const
+    T getIthSize(size_t i) const
     {
       assert(i < Dim);
       return fabs(top.getCoord(i) - low.getCoord(i));
     }
 
-    double getSizeX() const
+    T getSizeX() const
     {
       return getIthSize(0);
     }
 
-    double getSizeY() const
+    T getSizeY() const
     {
       return getIthSize(1);
     }
 
-    double getSizeZ() const
+    T getSizeZ() const
     {
       return getIthSize(2);
     }
 
-    bool inside(const double* point) const
+    bool inside(const T* point) const
     {
       if (point[0] >= low.getX() && point[0] <= top.getX()
        && point[1] >= low.getY() && point[1] <= top.getY()
@@ -147,7 +147,7 @@ namespace geometry_utils
         center.setCoord(i, 0.5 * (top.getCoord(i) + low.getCoord(i)));
     }
 
-    double getVolume() const
+    T getVolume() const
     {
       return getSizeX() * getSizeY() * getSizeZ();
     }
@@ -158,7 +158,7 @@ namespace geometry_utils
       top += newOrigin;
     }
 
-    double getMaxSize() const
+    T getMaxSize() const
     {
       return Dim == 3 ? std::max(getSizeX(), std::max(getSizeY(), getSizeZ())) :
           std::max(getSizeX(), getSizeY());
@@ -186,10 +186,10 @@ namespace geometry_utils
     bool operator==(const Box<T, Dim>& anotherBox) const
     {
       MathVector<T, Dim> diff = this->low - anotherBox.low;
-      double difflow = diff.getLength();
+      T difflow = diff.getLength();
 
       diff = this->top - anotherBox.top;
-      double difftop = diff.getLength();
+      T difftop = diff.getLength();
 
       if (difflow < Tolerance::globalTolerance && difftop < Tolerance::globalTolerance)
         return true;
@@ -202,7 +202,7 @@ namespace geometry_utils
     }
 
     // apply periodic boundary conditions to the point
-    void applyPBC(double coord[3]) const
+    void applyPBC(T coord[3]) const
     {
       if (inside(coord))
          return;

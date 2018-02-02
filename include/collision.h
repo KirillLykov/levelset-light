@@ -33,9 +33,9 @@ class Collision : private ls::LinearInterpolator<T,AccessStrategy>
   T m_diagLenght;
 
 public:
-  MathVector3D computeGrad(const MathVector3D& point) const
+  MathVector<T, 3> computeGrad(const MathVector<T, 3>& point) const
   {
-    MathVector3D grad = m_grad.compute_forward(point);
+    MathVector<T, 3> grad = m_grad.compute_forward(point);
     if ( fabs(grad*grad - T(1.0)) > T(0.2)) {
       grad = m_grad.compute_precise(point);
       grad.normalize();
@@ -53,9 +53,9 @@ public:
   }
 
   // Just value in the left bottom corner of the cell where the point is
-  double computeCheapSDF(const MathVector3D& point) const
+  T computeCheapSDF(const MathVector<T, 3>& point) const
   {
-    ls::geometry_utils::MathVector3D relativePosition = _LI::getRelativePosition(point);;
+    ls::geometry_utils::MathVector<T, 3> relativePosition = _LI::getRelativePosition(point);;
 
     size_t index[3];
     _LI::computeIndex(relativePosition, index);
@@ -64,20 +64,20 @@ public:
   }
 
   // if it is true than it might be that the point require bounce back
-  bool cheapOutsideCheck(const MathVector3D& point) const
+  bool cheapOutsideCheck(const MathVector<T, 3>& point) const
   {
     return computeCheapSDF(point) >= -m_diagLenght;
   }
 
-  T computeSDF(const MathVector3D& point) const
+  T computeSDF(const MathVector<T, 3>& point) const
   {
     return _LI::compute(point);
   }
 
   // it should be called rarely, happens due to numerical reasons
-  void rescueParticle(T currsdf, MathVector3D& pos) const
+  void rescueParticle(T currsdf, MathVector<T, 3>& pos) const
   {
-    MathVector3D grad = computeGrad(pos);
+    MathVector<T, 3> grad = computeGrad(pos);
     for (size_t i = 0; i < 5; ++i) {
       T stepsize = std::max(m_tolerance, fabs(currsdf));
       pos -= grad*stepsize;
@@ -89,18 +89,18 @@ public:
 
   // sometimes particle is on the border, we want to shift it inside to avoid numerical problems
   // it is close to the interface so use gradient computed earlier for the intersection point xstar
-  void shiftInside(T currsdf, const MathVector3D& grad, MathVector3D& pos) const
+  void shiftInside(T currsdf, const MathVector<T, 3>& grad, MathVector<T, 3>& pos) const
   {
     T stepsize = T(8.0)*std::max(m_tolerance, fabs(currsdf));
     pos -= grad*stepsize;
   }
 
-  void bounceBack(T currsdf, double dt, MathVector3D& pos, MathVector3D& vel)
+  void bounceBack(T currsdf, T dt, MathVector<T, 3>& pos, MathVector<T, 3>& vel)
   {
-    //MathVector3D origpos = pos; MathVector3D origvel = vel; // to debug
+    //MathVector<T, 3> origpos = pos; MathVector<T, 3> origvel = vel; // to debug
     using namespace ls::geometry_utils::raw_math_vector;
     T subdt = dt;
-    MathVector3D posOld, grad;
+    MathVector<T, 3> posOld, grad;
     size_t nmultipleReflections = 0; // to tackle multiple reflections
     do
     {
@@ -117,8 +117,8 @@ public:
 
       assert(computeSDF(posOld) <= 0.0);
 
-      MathVector3D xstar = pos;
-      double xstarSdf = currsdf;
+      MathVector<T, 3> xstar = pos;
+      T xstarSdf = currsdf;
       subdt = dt;
       // iterations of newton method t^(n+1)=t^n - phi(t^n)/phi'(t^n)
       for (size_t i = 0; i < 5; ++i)
@@ -131,8 +131,8 @@ public:
 
         subdt = std::min(dt, std::max(T(0.0), subdt - xstarSdf / DphiDt * (1.0 + m_tolerance)));
 
-        MathVector3D xstarNew = posOld + subdt * vel;
-        MathVector3D diffXstar = xstar - xstarNew;
+        MathVector<T, 3> xstarNew = posOld + subdt * vel;
+        MathVector<T, 3> diffXstar = xstar - xstarNew;
         T diff2 = diffXstar * diffXstar;
         if (diff2 < m_tolerance*m_tolerance)
           break;
@@ -171,18 +171,18 @@ public:
   // assumed to be called only for those edges which are in proximity to the interface
   // idea is from Fuhrmann et al. "Distance Fields for Rapid Collision Detection in Physically Based Modeling"
   // left and right vtx forming an edge
-  void bounceBackEdge(double dt, MathVector3D& posleft, MathVector3D& velleft, MathVector3D& posright, MathVector3D& velright)
+  void bounceBackEdge(T dt, MathVector<T, 3>& posleft, MathVector<T, 3>& velleft, MathVector<T, 3>& posright, MathVector<T, 3>& velright)
   {
     assert(computeSDF(posleft) < 0.0 && computeSDF(posright) < 0.0);
-    const MathVector3D posmiddle = 0.5*(posleft + posright);
-    MathVector3D velmiddle = 0.5*(velleft + velright);
+    const MathVector<T, 3> posmiddle = 0.5*(posleft + posright);
+    MathVector<T, 3> velmiddle = 0.5*(velleft + velright);
 
     if (cheapOutsideCheck(posmiddle)) {
-      double dist = computeSDF(posmiddle);
+      T dist = computeSDF(posmiddle);
       if (dist >= 0.0) {
-        MathVector3D bbpos = posmiddle;
+        MathVector<T, 3> bbpos = posmiddle;
         bounceBack(dist, dt, bbpos, velmiddle);
-        MathVector3D shift = bbpos - posmiddle;
+        MathVector<T, 3> shift = bbpos - posmiddle;
         posleft += shift;
         velleft *= -1.0;
         posright += shift;

@@ -7,7 +7,6 @@
 
 #include <stddef.h> //for size_t
 #include <vector>
-#include <boost/smart_ptr.hpp>
 #include "box.h"
 #include "math_vector.h"
 
@@ -33,7 +32,7 @@ namespace ls
     virtual double compute(const MathVector<T, 3>& p) const = 0;
     virtual ~IImplicitFunction() {}
 
-    typedef boost::shared_ptr< const IImplicitFunction<T> > Ptr;
+    typedef std::shared_ptr< const IImplicitFunction<T> > Ptr;
   private:
     IImplicitFunction(const IImplicitFunction&);
     IImplicitFunction& operator= (const IImplicitFunction&);
@@ -333,13 +332,13 @@ namespace ls
 
   DEF_IMPLICIT_FUNCTIONS(double,D);
 
-  typedef boost::shared_ptr<const IImplicitFunctionD> IImplicitFunctionDPtr;
+  typedef std::shared_ptr<const IImplicitFunctionD> IImplicitFunctionDPtr;
   typedef std::vector<IImplicitFunctionDPtr> FunctionsD;
   typedef typename FunctionsD::const_iterator FIteratorD;
 
   DEF_IMPLICIT_FUNCTIONS(float,F);
 
-  typedef boost::shared_ptr<const IImplicitFunctionF> IImplicitFunctionFPtr;
+  typedef std::shared_ptr<const IImplicitFunctionF> IImplicitFunctionFPtr;
   typedef std::vector<IImplicitFunctionFPtr> FunctionsF;
   typedef typename FunctionsF::const_iterator FIteratorF;
 }

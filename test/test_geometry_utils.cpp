@@ -6,21 +6,19 @@
 #include <math_vector.h>
 #include <box.h>
 
-//TODO write more tests
-
 TEST(VectorTest, vector3D)
 {
   using namespace geometry_utils;
 
-  MathVector3D v1(0.0, 0.0, 0.0);
-  MathVector3D v2(1.0, 2.0, 3.0);
-  MathVector3D v3 = v1 + v2;
+  MathVector3R v1(0.0, 0.0, 0.0);
+  MathVector3R v2(1.0, 2.0, 3.0);
+  MathVector3R v3 = v1 + v2;
   EXPECT_EQ(v2, v3);
 
-  v3 *= 0.0;
+  v3 *= Real(0.0);
   EXPECT_EQ(v1, v3);
 
-  v3 += MathVector3D(1.0, 0.0, 1.0);
+  v3 += MathVector3R(1.0, 0.0, 1.0);
   EXPECT_EQ(v3 * v2, 4.0);
 }
 
@@ -28,15 +26,15 @@ TEST(VectorTest, vector2D)
 {
   using namespace geometry_utils;
 
-  MathVector2D v1(0.0, 0.0);
-  MathVector2D v2(1.0, 2.0);
-  MathVector2D v3 = v1 + v2;
+  MathVector2R v1(0.0, 0.0);
+  MathVector2R v2(1.0, 2.0);
+  MathVector2R v3 = v1 + v2;
   EXPECT_EQ(v2, v3);
 
-  v3 *= 0.0;
+  v3 *= Real(0.0);
   EXPECT_EQ(v1, v3);
 
-  v3 += MathVector2D(1.0, 0.0);
+  v3 += MathVector2R(1.0, 0.0);
   EXPECT_EQ(v3 * v2, 1.0);
 }
 
@@ -44,8 +42,8 @@ TEST(VectorTest, vectorSwap)
 {
   using namespace geometry_utils;
 
-  MathVector3D v1(-1.0, -2.0, -3.0);
-  MathVector3D v2(1.0, 2.0, 3.0);
+  MathVector3R v1(-1.0, -2.0, -3.0);
+  MathVector3R v2(1.0, 2.0, 3.0);
   std::swap(v1, v2);
   EXPECT_EQ(1.0, v1.getX());
   EXPECT_EQ(2.0, v1.getY());
@@ -59,11 +57,11 @@ TEST(BoxTest, box3D)
 {
   using namespace geometry_utils;
 
-  Box3D box(5.6, 10.0, 21.0);
-  EXPECT_EQ(5.6, box.getSizeX());
-  EXPECT_EQ(10.0, box.getSizeY());
+  Box3R box(5.6, 10.0, 21.0);
+  EXPECT_NEAR(5.6, box.getSizeX(), abs_error);
+  EXPECT_NEAR(10.0, box.getSizeY(), abs_error);
   EXPECT_EQ(21.0, box.getSizeZ());
-  MathVector3D center;
+  MathVector3R center;
   box.getCenter(center);
   EXPECT_EQ(0.0, center.getX());
   EXPECT_EQ(0.0, center.getY());
@@ -74,10 +72,10 @@ TEST(BoxTest, box3dPointOnBorder)
 {
   using namespace geometry_utils;
 
-  MathVector3D low(-42.5, -24.80000000000000, -14);
-  MathVector3D top(42.5, 24.80000000000000, 14);
-  Box3D box(low, top);
-  MathVector3D p(-13.886428108937016, -24.800000000026049, 10.568595969105855);
+  MathVector3R low(-42.5, -24.80000000000000, -14);
+  MathVector3R top(42.5, 24.80000000000000, 14);
+  Box3R box(low, top);
+  MathVector3R p(-13.886428108937016, -24.800000000026049, 10.568595969105855);
   EXPECT_TRUE(box.inside(p));
 }
 
@@ -85,10 +83,10 @@ TEST(BoxTest, box2D)
 {
   using namespace geometry_utils;
 
-  Box2D box(5.6, 10.0);
-  EXPECT_EQ(5.6, box.getSizeX());
-  EXPECT_EQ(10.0, box.getSizeY());
-  MathVector2D center;
+  Box2R box(5.6, 10.0);
+  EXPECT_NEAR(5.6, box.getSizeX(), abs_error);
+  EXPECT_NEAR(10.0, box.getSizeY(), abs_error);
+  MathVector2R center;
   box.getCenter(center);
   EXPECT_EQ(0.0, center.getX());
   EXPECT_EQ(0.0, center.getY());
@@ -98,13 +96,13 @@ TEST(BoxTest, box3Dswap)
 {
   using namespace geometry_utils;
 
-  Box3D box1(5.6, 10.0, 21.0);
-  Box3D box2;
+  Box3R box1(5.6, 10.0, 21.0);
+  Box3R box2;
   std::swap(box1, box2);
-  EXPECT_EQ(5.6, box2.getSizeX());
-  EXPECT_EQ(10.0, box2.getSizeY());
-  EXPECT_EQ(21.0, box2.getSizeZ());
-  EXPECT_EQ(0.0, box1.getSizeX());
-  EXPECT_EQ(0.0, box1.getSizeY());
-  EXPECT_EQ(0.0, box1.getSizeZ());
+  EXPECT_NEAR(5.6, box2.getSizeX(), abs_error);
+  EXPECT_NEAR(10.0, box2.getSizeY(), abs_error);
+  EXPECT_NEAR(21.0, box2.getSizeZ(), abs_error);
+  EXPECT_NEAR(0.0, box1.getSizeX(), abs_error);
+  EXPECT_NEAR(0.0, box1.getSizeY(), abs_error);
+  EXPECT_NEAR(0.0, box1.getSizeZ(), abs_error);
 }
