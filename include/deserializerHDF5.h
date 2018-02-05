@@ -23,7 +23,7 @@ namespace io
 {
 
 #ifndef USE_HDF5
-template<class Grid, class AccessStrategy = BasicWriteAccessStrategy<double> >
+template<class Grid, class AccessStrategy = BasicWriteAccessStrategy<T> >
 class GridDeserializerHDF5
 {
 public:
@@ -42,9 +42,8 @@ public:
   using namespace H5;
 #endif
 
-  //TODO up to this moment it works only with Grid3D<double>, think how to extend it
   //TODO add reading xml metadata using XDMF library
-  template<class Grid, class AccessStrategy = BasicWriteAccessStrategy<double> >
+  template<typename T, typename Grid = ls::Grid3D<T>, class AccessStrategy = BasicWriteAccessStrategy<T> >
   class GridDeserializerHDF5 : public AccessStrategy
   {
     typedef AccessStrategy _AS;
@@ -74,7 +73,7 @@ public:
         H5T_class_t typeClass = dataset.getTypeClass();
 
         if (typeClass != H5T_FLOAT) //TODO change exception type
-          throw std::logic_error("only double is supported by HDF5Deserializer");
+          throw std::logic_error("only T is supported by HDF5Deserializer");
 
         //validateRank();
         DataSpace dataspace = dataset.getSpace();
@@ -93,9 +92,13 @@ public:
         DataSpace memspace(rank, &dims_out[0]);
         memspace.selectHyperslab(H5S_SELECT_SET, &dims_out[0], &offset[0]);
 
-        std::vector<double> buffer( computeBufferSize(dims_out) );
-
-        dataset.read(&buffer[0], PredType::NATIVE_DOUBLE, memspace, dataspace);
+        std::vector<T> buffer( computeBufferSize(dims_out) );
+#ifdef SINGLE_PRECISION
+        auto PT = PredType::NATIVE_FLOAT;
+#else
+        auto PT = PredType::NATIVE_DOUBLE;
+#endif
+        dataset.read(&buffer[0], PT, memspace, dataspace);
 
         fillGridFromBuffer(dims_out, buffer);
       }
@@ -142,7 +145,7 @@ public:
      * Although dims may be any size, it is assumed that it is 3 or 4
      *  but in this case assumed that dim[3] == 1.
      */
-    void fillGridFromBuffer(const _szArray& dims, const std::vector<double>& buffer)
+    void fillGridFromBuffer(const _szArray& dims, const std::vector<T>& buffer)
     {
       if (dims.size() == 4 && dims[3] != 1)
         throw std::logic_error("datasets with 4th dimension not equal to 1 are not supported");
@@ -153,13 +156,17 @@ public:
           for (size_t ix = 0; ix < _AS::m_grid.size(0); ++ix)
           {
             //TODO should be const T*
-            const double* data = &buffer[iz + _AS::m_grid.size(2) * (iy + _AS::m_grid.size(1) * ix)];
+            const T* data = &buffer[iz + _AS::m_grid.size(2) * (iy + _AS::m_grid.size(1) * ix)];
             _AS::setValue(ix, iy, iz, data);
           }
     }
   };
 #endif
-  typedef GridDeserializerHDF5<ls::Grid3D<double> > BasicDeserializerHDF5;
+#ifdef SINGLE_PRECISION
+  typedef GridDeserializerHDF5<float> BasicDeserializerHDF5;
+#else
+  typedef GridDeserializerHDF5<double> BasicDeserializerHDF5;
+#endif
 }
 }
 

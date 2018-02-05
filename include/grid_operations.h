@@ -42,10 +42,10 @@ namespace ls
   template<typename T>
   class FillInGrid : public IGridOperation<T>
   {
-    std::shared_ptr<IImplicitFunction<T>> m_lsfunc;
+    ls::IImplicitFunctionDPtr m_lsfunc;
   public:
 
-    FillInGrid(const std::shared_ptr<IImplicitFunction<T>> lsfunc)
+    FillInGrid(const ls::IImplicitFunctionDPtr lsfunc)
     : m_lsfunc(lsfunc)
     {}
 
@@ -56,7 +56,7 @@ namespace ls
    * Reduces the grid resolution
    */
   template<typename T>
-  class CoarsenGrid : public IGridOperation
+  class CoarsenGrid : public IGridOperation<T>
   {
     size_t m_dim[3];
   public:
@@ -71,9 +71,10 @@ namespace ls
   };
 
   // methods bodies
-  void ReflectGrid::run(Grid3D<T>& grid) const
+  template<typename T>
+  void ReflectGrid<T>::run(Grid3D<T>& grid) const
   {
-    geometry_utils::Box3D newDomain(grid.getBoundingBox().getSizeX(),
+    geometry_utils::Box3 newDomain(grid.getBoundingBox().getSizeX(),
         grid.getBoundingBox().getSizeY(),
         2.0 * grid.getBoundingBox().getSizeZ());
     Grid3D<T> twiceBiggerGrid(grid.size(0), grid.size(1), 2 * grid.size(2), newDomain);
@@ -92,7 +93,8 @@ namespace ls
     std::swap(twiceBiggerGrid, grid);
   }
 
-  void FillInGrid::run(Grid3D<T>& grid) const
+  template<typename T>
+  void FillInGrid<T>::run(Grid3D<T>& grid) const
   {
     size_t n = grid.size(0), m = grid.size(1), w = grid.size(2);
 
@@ -112,7 +114,8 @@ namespace ls
     }
   }
 
-  void CoarsenGrid::run(Grid3D<T>& grid) const
+  template<typename T>
+  void CoarsenGrid<T>::run(Grid3D<T>& grid) const
   {
     if (grid.size(0) < m_dim[0] || grid.size(1) < m_dim[1] || grid.size(2) < m_dim[2]) {
       throw std::logic_error("at least one of the input grid's dimensions are smaller than output grid dimensions");

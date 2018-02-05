@@ -51,7 +51,7 @@ public:
     typedef AccessStrategy _AS;
 
     const std::string m_fullFileName;
-    const geometry_utils::Box3D m_bbox; // bounding box for the grid
+    const geometry_utils::Box3 m_bbox; // bounding box for the grid
 
   public:
 
@@ -98,8 +98,11 @@ public:
     }
   };
 #endif
-
+#ifdef SINGLE_PRECISION
+  typedef GridSerializerVTK<ls::Grid3D<float> > BasicSerializerVTK;
+#else
   typedef GridSerializerVTK<ls::Grid3D<double> > BasicSerializerVTK;
+#endif
 }
 }
 

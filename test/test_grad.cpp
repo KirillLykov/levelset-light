@@ -8,20 +8,20 @@
 #include <random> //c++11
 #include "grad.h"
 #include "basic_access_strategy.h"
-typedef ls::Grad<double, ls::BasicReadAccessStrategy > _BasicGrad;
-typedef ls::Grad<double, ls::PeriodicReadAS > _PeriodicGrad;
+typedef ls::Grad<Real, ls::BasicReadAccessStrategy > _BasicGrad;
+typedef ls::Grad<Real, ls::PeriodicReadAS > _PeriodicGrad;
 
 using namespace ls;
 using namespace geometry_utils;
 
 TEST(GradTest, sphere)
 {
-  Box3D box(16.0);
+  Box3R box(16.0);
   MathVector3D low = box.getLow();
 
   size_t n = 32, m = 32, w = 32;
-  double h[] = {box.getSizeX()/n, box.getSizeY()/m, box.getSizeZ()/w};
-  Grid3D<double> grid(n, m, w, box);
+  Real h[] = {box.getSizeX()/n, box.getSizeY()/m, box.getSizeZ()/w};
+  Grid3D<Real> grid(n, m, w, box);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -33,8 +33,8 @@ TEST(GradTest, sphere)
 
   _BasicGrad grad(grid);
 
-  double ferror = -1e6;
-  double cerror = -1e6;
+  Real ferror = -1e6;
+  Real cerror = -1e6;
   //check that interpolation at known points are as defined in the grid
   for (size_t i = 2; i < n-2; ++i) {
     for (size_t j = 2; j < m-2; ++j) {
@@ -66,17 +66,17 @@ TEST(GradTest, bback_grad)
   size_t n = 32, m = 32, w = 32;
 
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 2.0) );
-  FillInGrid fill(func);
+  FillInGrid<Real> fill(func);
 
-  Grid3D<double> grid(n, m, w, Box3D(5.0, 5.0, 5.0));
+  Grid3D<Real> grid(n, m, w, Box3R(5.0, 5.0, 5.0));
   fill.run(grid);
 
-  const double tolerance = 5.0/n * sqrt(3);
+  const Real tolerance = 5.0/n * sqrt(3);
 
   _BasicGrad collision(grid);
   //
   std::default_random_engine generator;
-  std::uniform_real_distribution<double> distribution(-2.49, 2.49);
+  std::uniform_real_distribution<Real> distribution(-2.49, 2.49);
 
   int i = 0, j = 0;
 
@@ -85,11 +85,11 @@ TEST(GradTest, bback_grad)
     const MathVector3D grad_exact = pos / pos.getLength();
     MathVector3D grad1 = collision.compute_forward(pos);
     EXPECT_LT( fabs(grad1.getLength() - 1.0), 0.2);
-    double diff1 = (grad1 - grad_exact).getLength();
+    Real diff1 = (grad1 - grad_exact).getLength();
     EXPECT_TRUE(diff1 < 2*tolerance);
     MathVector3D grad2 = collision.compute_precise(pos);
     EXPECT_LT( fabs(grad2.getLength() - 1.0), 0.2);
-    double diff2 = (grad2 - grad_exact).getLength();
+    Real diff2 = (grad2 - grad_exact).getLength();
     EXPECT_TRUE(diff2 < tolerance);
 
     if (diff2 > diff1)
@@ -105,19 +105,19 @@ TEST(GradTest, grad_discont)
   using namespace ls;
   const size_t n = 128, m = 128, w = 128;
 
-  double r = 5.0;
-  IImplicitFunctionDPtr func( new RecPipe<double>(r) );
-  FillInGrid fill(func);
+  Real r = 5.0;
+  IImplicitFunctionDPtr func( new RecPipe<Real>(r) );
+  FillInGrid<Real> fill(func);
 
-  Grid3D<double> grid(n, m, w, Box3D(15.0, 15.0, 15.0));
+  Grid3D<Real> grid(n, m, w, Box3R(15.0, 15.0, 15.0));
   fill.run(grid);
 
-  const double tolerance = 15.0/n * sqrt(3);
+  const Real tolerance = 15.0/n * sqrt(3);
 
   _PeriodicGrad collision(grid);
 
   const MathVector3D top(r, 0.0, 0.0);
-  double dist = collision.compute(top);
+  Real dist = collision.compute(top);
   EXPECT_LT(dist, tolerance);
 
   // now add pertrubations
@@ -125,11 +125,11 @@ TEST(GradTest, grad_discont)
     MathVector3D grad_exact(1.0, 0.0, 0.0); // also strictly speaking it does not exist
     MathVector3D p = top + MathVector3D(1.0/n, 1.0/n, 1.0/n);
     MathVector3D grad1 = collision.compute_forward(p);
-    double diff1 = (grad1 - grad_exact).getLength();
-    EXPECT_LT(diff1, 1e-12);
+    Real diff1 = (grad1 - grad_exact).getLength();
+    EXPECT_LT(diff1, tol);
     MathVector3D grad2 = collision.compute_precise(p);
-    double diff2 = (grad2 - grad_exact).getLength();
-    EXPECT_LT(diff2, 1e-12);
+    Real diff2 = (grad2 - grad_exact).getLength();
+    EXPECT_LT(diff2, tol);
   }
 
   {
@@ -138,20 +138,20 @@ TEST(GradTest, grad_discont)
     MathVector3D p = top + MathVector3D(-1e-1, 1e-1, 0.0);
     MathVector3D grad1 = collision.compute_precise(p);
     grad1.normalize();
-    EXPECT_LT((grad1 - grad_exact).getLength(), 1e-12);
+    EXPECT_LT((grad1 - grad_exact).getLength(), tol);
 
     MathVector3D grad2 = collision.compute_forward(p);
-    EXPECT_LT((grad2 - MathVector3D(1.0, 1.0, 0.0)).getLength(), 1e-12);
+    EXPECT_LT((grad2 - MathVector3D(1.0, 1.0, 0.0)).getLength(), tol);
     MathVector3D grad3 = collision.compute_backward(p);
-    EXPECT_LT((grad3 - MathVector3D(1.0, 0.0, 0.0)).getLength(), 1e-12);
+    EXPECT_LT((grad3 - MathVector3D(1.0, 0.0, 0.0)).getLength(), tol);
 
     MathVector3D vel(0.0, 1.0, 0.0);
     MathVector3D grad4 = collision.compute_biased(p, vel);
-    EXPECT_LT((grad4 - MathVector3D(1.0, 1.0, 0.0)).getLength(), 1e-12);
+    EXPECT_LT((grad4 - MathVector3D(1.0, 1.0, 0.0)).getLength(), tol);
 
     vel = MathVector3D(0.0, -1.0, 0.0);
     MathVector3D grad5 = collision.compute_biased(p, vel);
-    EXPECT_LT((grad5 - MathVector3D(1.0, 0.0, 0.0)).getLength(), 1e-12);
+    EXPECT_LT((grad5 - MathVector3D(1.0, 0.0, 0.0)).getLength(), tol);
   }
 }
 

@@ -98,7 +98,7 @@ public:
 
         // set in output grid size and bounding box
         _AS::m_grid.resize(dimsOut.x(), dimsOut.y(), dimsOut.z());
-        Box3D domain = vdbBox2lsBox(box);
+        Box3 domain = vdbBox2lsBox(box);
         _AS::m_grid.setBoundingBox(domain);
 
         for (size_t i = 0; i < dimsOut.x(); ++i) {
@@ -130,13 +130,19 @@ public:
       return ls::geometry_utils::MathVector3D(inputVector.asPointer());
     }
 
-    ls::geometry_utils::Box3D vdbBox2lsBox(const openvdb::BBoxd& inputBox)
+    ls::geometry_utils::Box3 vdbBox2lsBox(const openvdb::BBoxd& inputBox)
     {
-      return ls::geometry_utils::Box3D(vdbVector2lsVector(inputBox.min()), vdbVector2lsVector(inputBox.max()));
+      return ls::geometry_utils::Box3(vdbVector2lsVector(inputBox.min()), vdbVector2lsVector(inputBox.max()));
     }
   };
 #endif
-  typedef GridDeserializerVDB<ls::Grid3D<double> > BasicDeserializerVDB;
+
+#ifdef SINGLE_PRECISION
+	typedef GridDeserializerVDB<ls::Grid3D<float> > BasicDeserializerVDB;
+#else
+	typedef GridDeserializerVDB<ls::Grid3D<double> > BasicDeserializerVDB;
+#endif
+
 }
 }
 

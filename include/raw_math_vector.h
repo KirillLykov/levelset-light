@@ -26,7 +26,7 @@ namespace geometry_utils
   	template<typename T>
     inline bool isEqualLinear(T left, T right)
     {
-      return Tolerance::close(left, right);
+      return Tolerance<T>::close(left, right);
     }
 
     template<typename T>

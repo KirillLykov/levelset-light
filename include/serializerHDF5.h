@@ -26,7 +26,7 @@ namespace io
 {
 
 #ifndef USE_HDF5
-template<class Grid, class AccessStrategy = ls::BasicReadAccessStrategy<double> >
+template<typename T, typename Grid = ls::Grid3D<T>, class AccessStrategy = ls::BasicReadAccessStrategy<T> >
 class GridSerializerHDF5
 {
 public:
@@ -44,7 +44,7 @@ public:
 #endif
 
   // TODO up to the moment work only with Grid3D<double>, extend it
-  template<class Grid, class AccessStrategy = ls::BasicReadAccessStrategy<double> >
+  template<typename T, typename Grid = ls::Grid3D<T>, class AccessStrategy = ls::BasicReadAccessStrategy<T> >
   class GridSerializerHDF5 : public AccessStrategy
   {
     typedef AccessStrategy _AS;
@@ -52,7 +52,7 @@ public:
     const std::string m_fullFileName;
     const std::string m_metadataFileName; //used by paraview
     const std::string m_datasetName;
-    const geometry_utils::Box3D m_bbox; // bounding box for the grid, by default it is origin centerd 1x1x1
+    const geometry_utils::Box3 m_bbox; // bounding box for the grid, by default it is origin centerd 1x1x1
 
     static const hsize_t m_rank = 3;
 
@@ -76,17 +76,20 @@ public:
         DSetCreatPropList plist;
         hsize_t dims[] = {_AS::m_grid.size(0), _AS::m_grid.size(1), _AS::m_grid.size(2)};
         DataSpace fspace(m_rank, dims);
-
-        DataSet dataset(file.createDataSet(m_datasetName, PredType::NATIVE_DOUBLE, fspace, plist));
-
+#ifdef SINGLE_PRECISION
+		auto PT = PredType::NATIVE_FLOAT;
+#else
+		auto PT = PredType::NATIVE_DOUBLE;
+#endif
+		DataSet dataset(file.createDataSet(m_datasetName, PT, fspace, plist));
         hsize_t offset[m_rank]; // hyperslab offset in the file
         memset(offset, 0, m_rank * sizeof(hsize_t));
         fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
 
-        std::vector<double> buffer( computeBufferSize(dims) );
+        std::vector<T> buffer( computeBufferSize(dims) );
         fillBufferFromGrid(dims, buffer);
 
-        dataset.write(&buffer[0], PredType::NATIVE_DOUBLE);
+        dataset.write(&buffer[0], PT);
 
         writeMetadata(dims);
       }
@@ -127,13 +130,13 @@ public:
     /**
      * writing 3D data only
      */
-    void fillBufferFromGrid(const hsize_t* dims, std::vector<double>& buffer) const
+    void fillBufferFromGrid(const hsize_t* dims, std::vector<T>& buffer) const
     {
       for (size_t iz = 0; iz < _AS::m_grid.size(2); ++iz)
         for (size_t iy = 0; iy < _AS::m_grid.size(1); ++iy)
           for (size_t ix = 0; ix < _AS::m_grid.size(0); ++ix)
           {
-            double data = _AS::getValue(ix, iy, iz);
+            T data = _AS::getValue(ix, iy, iz);
             buffer[iz + _AS::m_grid.size(2) * (iy + _AS::m_grid.size(1) * ix)] = data;
           }
     }
@@ -149,6 +152,11 @@ public:
       std::stringstream ss;
       geometry_utils::MathVector3D bboxCenter;
       m_bbox.getCenter(bboxCenter);
+#ifdef SINGLE_PRECISION
+	  int precision = 4;
+#else
+	  int precision = 8;
+#endif
 
       //Note, that z and x are swapped for xdmf
       ss << "<?xml version=\"1.0\" ?>\n" <<
@@ -160,10 +168,10 @@ public:
           "     <Topology TopologyType=\"3DCORECTMesh\" Dimensions=\"" <<
                   dims[0] << " "<< dims[1] << " " << dims[2] << "\"/>\n" <<
           "     <Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n"  <<
-          "       <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"  <<
+          "       <DataItem Name=\"Origin\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"" << precision << "\" Format=\"XML\">\n"  <<
           "        " << bboxCenter.getX() << " " << bboxCenter.getY() << " " << bboxCenter.getZ() << "\n" <<
           "       </DataItem>\n"  <<
-          "       <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"8\" Format=\"XML\">\n"  <<
+          "       <DataItem Name=\"Spacing\" Dimensions=\"3\" NumberType=\"Float\" Precision=\"" << precision << "\" Format=\"XML\">\n"  <<
           "        " << m_bbox.getIthSize(0) / dims[0] << " " << m_bbox.getIthSize(1) / dims[1] << " " << m_bbox.getIthSize(2) / dims[2]  << "\n" <<
           "       </DataItem>\n"  <<
           "     </Geometry>\n"  <<
@@ -191,7 +199,11 @@ public:
   };
 #endif
 
-  typedef GridSerializerHDF5<ls::Grid3D<double> > BasicSerializerHDF5;
+#ifdef SINGLE_PRECISION
+  typedef GridSerializerHDF5<float> BasicSerializerHDF5;
+#else
+  typedef GridSerializerHDF5<double> BasicSerializerHDF5;
+#endif
 }
 }
 

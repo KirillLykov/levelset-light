@@ -16,8 +16,8 @@ using namespace geometry_utils;
 TEST(GridOperations, ReflectGrid)
 {
   size_t n = 8, m = 8, w = 16;
-  Grid3D<double> originalGrid(n, m, w, Box3D(10.0, 20.0, 30.0));
-  double h = 1.0 / (n - 1);
+  Grid3D<Real> originalGrid(n, m, w, Box3R(10.0, 20.0, 30.0));
+  Real h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -27,9 +27,9 @@ TEST(GridOperations, ReflectGrid)
     }
   }
 
-  Grid3D<double> reflectedGrid = originalGrid;
+  Grid3D<Real> reflectedGrid = originalGrid;
 
-  ReflectGrid rg;
+  ReflectGrid<Real> rg;
   rg.run(reflectedGrid);
 
   EXPECT_EQ(reflectedGrid.size(0), originalGrid.size(0));
@@ -54,12 +54,12 @@ TEST(GridOperations, FillInGrid)
 {
   size_t n = 8, m = 8, w = 16;
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
-  FillInGrid fill(func);
+  FillInGrid<Real> fill(func);
 
-  Grid3D<double> grid(n, m, w, Box3D(10.0, 20.0, 30.0));
+  Grid3D<Real> grid(n, m, w, Box3R(10.0, 20.0, 30.0));
   fill.run(grid);
 
-  double h[] = {grid.getBoundingBox().getSizeX() / (n - 1.0),
+  Real h[] = {grid.getBoundingBox().getSizeX() / (n - 1.0),
       grid.getBoundingBox().getSizeY() / (m - 1.0),
       grid.getBoundingBox().getSizeZ() / (w - 1.0)};
 
@@ -76,32 +76,31 @@ TEST(GridOperations, FillInGrid)
 
 TEST(GridOperations, CoarsenGrid)
 {
-  Close_absolut close_at_absolut(10e-12);
   size_t rndPointsCount = 10;
 
   size_t n = 20, m = 25, w = 30;
   IImplicitFunctionDPtr func( new SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
-  FillInGrid fill(func);
+  FillInGrid<Real> fill(func);
 
-  Grid3D<double> grid(n, m, w, Box3D(10.0, 20.0, 30.0));
+  Grid3D<Real> grid(n, m, w, Box3R(10.0, 20.0, 30.0));
   fill.run(grid);
 
-  CoarsenGrid cg(20, 20, 20);
+  CoarsenGrid<Real> cg(20, 20, 20);
 
-  Grid3D<double> outGrid = grid;
+  Grid3D<Real> outGrid = grid;
   cg.run(outGrid);
 
-  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOriginal(grid);
-  ls::LinearInterpolator<double, ls::BasicReadAccessStrategy > liOut(outGrid);
+  ls::LinearInterpolator<Real, ls::BasicReadAccessStrategy > liOriginal(grid);
+  ls::LinearInterpolator<Real, ls::BasicReadAccessStrategy > liOut(outGrid);
 
   std::default_random_engine generator;
-  geometry_utils::Box3D domain = grid.getBoundingBox();
-  std::uniform_real_distribution<double> distribution1(domain.getLow().getX(), domain.getTop().getX());
-  std::uniform_real_distribution<double> distribution2(-domain.getLow().getY(), domain.getTop().getY());
-  std::uniform_real_distribution<double> distribution3(-domain.getLow().getZ(), domain.getTop().getZ());
+  Box3R domain = grid.getBoundingBox();
+  std::uniform_real_distribution<Real> distribution1(domain.getLow().getX(), domain.getTop().getX());
+  std::uniform_real_distribution<Real> distribution2(-domain.getLow().getY(), domain.getTop().getY());
+  std::uniform_real_distribution<Real> distribution3(-domain.getLow().getZ(), domain.getTop().getZ());
 
   for (size_t i = 0; i < rndPointsCount; ++i) {
     MathVector3D point(distribution1(generator), distribution2(generator), distribution3(generator));
-    EXPECT_TRUE( close_at_absolut(liOriginal.compute(point), liOut.compute(point)) );
+    EXPECT_NEAR(liOriginal.compute(point), liOut.compute(point), tol*10);
   }
 }

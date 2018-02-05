@@ -58,8 +58,8 @@ TEST(BoxTest, box3D)
   using namespace geometry_utils;
 
   Box3R box(5.6, 10.0, 21.0);
-  EXPECT_NEAR(5.6, box.getSizeX(), abs_error);
-  EXPECT_NEAR(10.0, box.getSizeY(), abs_error);
+  EXPECT_NEAR(5.6, box.getSizeX(), tol);
+  EXPECT_NEAR(10.0, box.getSizeY(), tol);
   EXPECT_EQ(21.0, box.getSizeZ());
   MathVector3R center;
   box.getCenter(center);
@@ -84,8 +84,8 @@ TEST(BoxTest, box2D)
   using namespace geometry_utils;
 
   Box2R box(5.6, 10.0);
-  EXPECT_NEAR(5.6, box.getSizeX(), abs_error);
-  EXPECT_NEAR(10.0, box.getSizeY(), abs_error);
+  EXPECT_NEAR(5.6, box.getSizeX(), tol);
+  EXPECT_NEAR(10.0, box.getSizeY(), tol);
   MathVector2R center;
   box.getCenter(center);
   EXPECT_EQ(0.0, center.getX());
@@ -99,10 +99,10 @@ TEST(BoxTest, box3Dswap)
   Box3R box1(5.6, 10.0, 21.0);
   Box3R box2;
   std::swap(box1, box2);
-  EXPECT_NEAR(5.6, box2.getSizeX(), abs_error);
-  EXPECT_NEAR(10.0, box2.getSizeY(), abs_error);
-  EXPECT_NEAR(21.0, box2.getSizeZ(), abs_error);
-  EXPECT_NEAR(0.0, box1.getSizeX(), abs_error);
-  EXPECT_NEAR(0.0, box1.getSizeY(), abs_error);
-  EXPECT_NEAR(0.0, box1.getSizeZ(), abs_error);
+  EXPECT_NEAR(5.6, box2.getSizeX(), tol);
+  EXPECT_NEAR(10.0, box2.getSizeY(), tol);
+  EXPECT_NEAR(21.0, box2.getSizeZ(), tol);
+  EXPECT_NEAR(0.0, box1.getSizeX(), tol);
+  EXPECT_NEAR(0.0, box1.getSizeY(), tol);
+  EXPECT_NEAR(0.0, box1.getSizeZ(), tol);
 }

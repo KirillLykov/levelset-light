@@ -7,6 +7,7 @@
 
 #include <stddef.h> //for size_t
 #include <vector>
+#include <memory>
 #include "box.h"
 #include "math_vector.h"
 
@@ -29,7 +30,7 @@ namespace ls
   {
   public:
     IImplicitFunction() {}
-    virtual double compute(const MathVector<T, 3>& p) const = 0;
+    virtual T compute(const MathVector<T, 3>& p) const = 0;
     virtual ~IImplicitFunction() {}
 
     typedef std::shared_ptr< const IImplicitFunction<T> > Ptr;
@@ -330,17 +331,22 @@ namespace ls
   typedef Intersection<type> Intersection##postfix; \
   typedef Difference<type> Difference##postfix;
 
+#ifdef SINGLE_PRECISION
+  DEF_IMPLICIT_FUNCTIONS(float,D);
+#else
   DEF_IMPLICIT_FUNCTIONS(double,D);
+#endif
 
   typedef std::shared_ptr<const IImplicitFunctionD> IImplicitFunctionDPtr;
   typedef std::vector<IImplicitFunctionDPtr> FunctionsD;
   typedef typename FunctionsD::const_iterator FIteratorD;
 
-  DEF_IMPLICIT_FUNCTIONS(float,F);
+/*  DEF_IMPLICIT_FUNCTIONS(float,F);
 
   typedef std::shared_ptr<const IImplicitFunctionF> IImplicitFunctionFPtr;
   typedef std::vector<IImplicitFunctionFPtr> FunctionsF;
   typedef typename FunctionsF::const_iterator FIteratorF;
+*/
 }
 
 #endif /* IMPLICITFUNCTIONS_H_ */

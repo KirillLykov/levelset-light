@@ -8,51 +8,50 @@
 
 using namespace ls;
 using namespace geometry_utils;
-static Close_absolut close_at_tol(10e-12);
 
 TEST(ImpilictFunctionsTest, AxialCylinder)
 {
   ls::AxialCylinderD axialCylinder(ls::zDim, 1.0);
-  EXPECT_TRUE( close_at_tol(axialCylinder.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
-  EXPECT_TRUE( close_at_tol(axialCylinder.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
-  EXPECT_TRUE( close_at_tol(axialCylinder.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialCylinder.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialCylinder.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialCylinder.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
 }
 
 TEST(ImpilictFunctionsTest, NonAxialCylinder)
 {
   ls::NonAxialCylinderD nonAxialCylinder(MathVector3D(0.0, 0.0, 0.0), MathVector3D(0.0, 0.0, 1.0), 1.0, 1.0);
-  EXPECT_TRUE( close_at_tol(nonAxialCylinder.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
-  EXPECT_TRUE( close_at_tol(nonAxialCylinder.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
-  EXPECT_TRUE( close_at_tol(nonAxialCylinder.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
-  EXPECT_TRUE( close_at_tol(nonAxialCylinder.compute(MathVector3D(0.0, 0.0, 2.0)), 1.5) );
-  EXPECT_TRUE( close_at_tol(nonAxialCylinder.compute(MathVector3D(0.0, 0.0, -2.0)), 1.5) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(nonAxialCylinder.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(nonAxialCylinder.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(nonAxialCylinder.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(nonAxialCylinder.compute(MathVector3D(0.0, 0.0, 2.0)), 1.5) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(nonAxialCylinder.compute(MathVector3D(0.0, 0.0, -2.0)), 1.5) );
 }
 
 TEST(ImpilictFunctionsTest, Sphere)
 {
   ls::SphereD sphere(MathVector3D(0.0, 0.0, 0.0), 1.0);
-  EXPECT_TRUE( close_at_tol(sphere.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
-  EXPECT_TRUE( close_at_tol(sphere.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
-  EXPECT_TRUE( close_at_tol(sphere.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(sphere.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(sphere.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(sphere.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
 }
 
 TEST(ImpilictFunctionsTest, AxialTorus)
 {
   ls::AxialTorusD axialTorus(ls::zDim, MathVector3D(0.0, 0.0, 0.0), 1.5, 0.5);
-  EXPECT_TRUE( close_at_tol(axialTorus.compute(MathVector3D(0.0, 0.0, 0.0)), 1.0) );
-  EXPECT_TRUE( close_at_tol(axialTorus.compute(MathVector3D(1.5, 0.0, 0.0)), -0.5) );
-  EXPECT_TRUE( close_at_tol(axialTorus.compute(MathVector3D(2.0, 0.0, 0.0)), 0.0) );
-  EXPECT_TRUE( close_at_tol(axialTorus.compute(MathVector3D(3.0, 0.0, 0.0)), 1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialTorus.compute(MathVector3D(0.0, 0.0, 0.0)), 1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialTorus.compute(MathVector3D(1.5, 0.0, 0.0)), -0.5) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialTorus.compute(MathVector3D(2.0, 0.0, 0.0)), 0.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(axialTorus.compute(MathVector3D(3.0, 0.0, 0.0)), 1.0) );
 }
 
 TEST(ImpilictFunctionsTest, CutByPlane)
 {
-  boost::shared_ptr<ls::SphereD> pSphere( new ls::SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
+  std::shared_ptr<ls::SphereD> pSphere( new ls::SphereD(MathVector3D(0.0, 0.0, 0.0), 1.0) );
   ls::CutByPlaneD cut(pSphere, MathVector3D(0.0, 0.0, 1.0), MathVector3D(0.0, 0.0, 0.0));
-  EXPECT_TRUE( close_at_tol(cut.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
-  EXPECT_TRUE( close_at_tol(cut.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
-  EXPECT_TRUE( close_at_tol(cut.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
-  EXPECT_TRUE( close_at_tol(cut.compute(MathVector3D(0.0, 0.0, 1.0)), 1.4142135623730951) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(cut.compute(MathVector3D(0.0, 0.0, 0.0)), -1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(cut.compute(MathVector3D(1.0, 0.0, 0.0)), 0.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(cut.compute(MathVector3D(2.0, 0.0, 0.0)), 1.0) );
+  EXPECT_TRUE( Tolerance<Real>::close_at_tol(cut.compute(MathVector3D(0.0, 0.0, 1.0)), 1.4142135623730951) );
 }
 
 TEST(ImpilictFunctionsTest, Operations)

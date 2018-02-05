@@ -13,7 +13,7 @@ using namespace ls;
 TEST(TwoDGridTest, construction)
 {
   try {
-    Grid2D<double> grid3(0, 0);
+    Grid2D<Real> grid3(0, 0);
   }
   catch (const array_size_error& er)
   {
@@ -25,7 +25,7 @@ TEST(TwoDGridTest, construction)
 TEST(TwoDGridTest, size)
 {
   size_t n = 3, m = 4;
-  Grid2D<double> grid(n, m);
+  Grid2D<Real> grid(n, m);
   EXPECT_EQ(grid.size(0), n);
   EXPECT_EQ(grid.size(1), m);
   ASSERT_THROW({
@@ -35,30 +35,30 @@ TEST(TwoDGridTest, size)
 
 TEST(TwoDGridTest, copyConstruction)
 {
-  Grid2D<double> grid1(1, 2, geometry_utils::Box2D(1.0, 5.0));
-  Grid2D<double> grid2(grid1);
+  Grid2D<Real> grid1(1, 2, Box2R(1.0, 5.0));
+  Grid2D<Real> grid2(grid1);
   EXPECT_EQ(grid1, grid2);
 }
 
 TEST(TwoDGridTest, assignment)
 {
-  Grid2D<double> grid1(1, 2, geometry_utils::Box2D(1.0, 5.0));
-  Grid2D<double> grid2(1, 2);
+  Grid2D<Real> grid1(1, 2, Box2R(1.0, 5.0));
+  Grid2D<Real> grid2(1, 2);
   grid2 = grid1;
   EXPECT_EQ(grid1, grid2);
 }
 
 TEST(TwoDGridTest, notEqual2d)
 {
-  Grid2D<double> grid1(1, 2, geometry_utils::Box2D(1.0, 5.0));
-  Grid2D<double> grid2(1, 2, geometry_utils::Box2D(0.0, 4.0));
+  Grid2D<Real> grid1(1, 2, Box2R(1.0, 5.0));
+  Grid2D<Real> grid2(1, 2, Box2R(0.0, 4.0));
   EXPECT_NE(grid1, grid2);
 }
 
 TEST(TwoDGridTest, assignmentBrake)
 {
-  Grid2D<double> grid1(1, 2);
-  Grid2D<double> grid2(2, 3);
+  Grid2D<Real> grid1(1, 2);
+  Grid2D<Real> grid2(2, 3);
   ASSERT_THROW({
     grid2 = grid1;
   }, array_size_error);
@@ -67,14 +67,14 @@ TEST(TwoDGridTest, assignmentBrake)
 TEST(TwoDGridTest, access)
 {
   size_t n = 2, m = 4;
-  Grid2D<double> grid(n, m);
+  Grid2D<Real> grid(n, m);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       grid(i, j) = i * j;
     }
   }
 
-  const Grid2D<double> grid2 = grid;
+  const Grid2D<Real> grid2 = grid;
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       EXPECT_EQ(i * j, grid2(i, j));
@@ -85,7 +85,7 @@ TEST(TwoDGridTest, access)
 TEST(TwoDGridTest, swap)
 {
   size_t n1 = 3, m1 = 2;
-  Grid2D<double> grid1(n1, m1);
+  Grid2D<Real> grid1(n1, m1);
   for (size_t i = 0; i < n1; ++i) {
     for (size_t j = 0; j < m1; ++j) {
       grid1(i, j) = i * j;
@@ -93,7 +93,7 @@ TEST(TwoDGridTest, swap)
   }
 
   size_t n2 = 5, m2 = 3;
-  Grid2D<double> grid2(n2, m2);
+  Grid2D<Real> grid2(n2, m2);
   for (size_t i = 0; i < n2; ++i) {
     for (size_t j = 0; j < m2; ++j) {
       grid2(i, j) = i + j;
@@ -117,7 +117,7 @@ TEST(TwoDGridTest, swap)
 
 TEST(TwoDGridTest, defaultConstructorAndResize)
 {
-  Grid2D<double> grid;
+  Grid2D<Real> grid;
   size_t n = 2, m = 4;
   grid.resize(n, m);
 
@@ -128,7 +128,7 @@ TEST(TwoDGridTest, defaultConstructorAndResize)
 TEST(TwoDGridTest, resize)
 {
   size_t n = 2, m = 4;
-  Grid2D<double> grid(n, m);
+  Grid2D<Real> grid(n, m);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       grid(i, j) = i * j;
@@ -155,13 +155,13 @@ TEST(TwoDGridTest, resize)
 
 TEST(ThreeDGridTest, construction)
 {
-  Grid3D<double> grid(1, 2, 3);
+  Grid3D<Real> grid(1, 2, 3);
 }
 
 TEST(ThreeDGridTest, size)
 {
   size_t n = 3, m = 4, w = 7;
-  Grid3D<double> grid(n, m, w);
+  Grid3D<Real> grid(n, m, w);
   EXPECT_EQ(grid.size(0), n);
   EXPECT_EQ(grid.size(1), m);
   EXPECT_EQ(grid.size(2), w);
@@ -172,30 +172,30 @@ TEST(ThreeDGridTest, size)
 
 TEST(ThreeDGridTest, copyConstruction)
 {
-  Grid3D<double> grid1(1, 2, 3, geometry_utils::Box3D(1.0, 2.0, 3.0));
-  Grid3D<double> grid2(grid1);
+  Grid3D<Real> grid1(1, 2, 3, Box3R(1.0, 2.0, 3.0));
+  Grid3D<Real> grid2(grid1);
   EXPECT_EQ(grid1, grid2);
 }
 
 TEST(ThreeDGridTest, assignment)
 {
-  Grid3D<double> grid1(2, 2, 3, geometry_utils::Box3D(1.0, 2.0, 3.0));
-  Grid3D<double> grid2(2, 2, 3);
+  Grid3D<Real> grid1(2, 2, 3, Box3R(1.0, 2.0, 3.0));
+  Grid3D<Real> grid2(2, 2, 3);
   grid2 = grid1;
   EXPECT_EQ(grid1, grid2);
 }
 
 TEST(TwoDGridTest, notEqual3d)
 {
-  Grid3D<double> grid1(1, 2, 3, geometry_utils::Box3D(1.0, 2.0, 7.0));
-  Grid3D<double> grid2(1, 2, 3, geometry_utils::Box3D(1.0, 2.0, 6.0));
+  Grid3D<Real> grid1(1, 2, 3, Box3R(1.0, 2.0, 7.0));
+  Grid3D<Real> grid2(1, 2, 3, Box3R(1.0, 2.0, 6.0));
   EXPECT_NE(grid1, grid2);
 }
 
 TEST(ThreeDGridTest, assignmentBrake)
 {
-  Grid3D<double> grid1(1, 2, 5);
-  Grid3D<double> grid2(2, 3, 4);
+  Grid3D<Real> grid1(1, 2, 5);
+  Grid3D<Real> grid2(2, 3, 4);
   ASSERT_THROW({
     grid2 = grid1;}, array_size_error);
 }
@@ -203,7 +203,7 @@ TEST(ThreeDGridTest, assignmentBrake)
 TEST(ThreeDGridTest, access)
 {
   size_t n = 3, m = 4, w = 7;
-  Grid3D<double> grid(n, m, w);
+  Grid3D<Real> grid(n, m, w);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -212,7 +212,7 @@ TEST(ThreeDGridTest, access)
     }
   }
 
-  const Grid3D<double> grid2 = grid;
+  const Grid3D<Real> grid2 = grid;
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
       for (size_t k = 0; k < w; ++k) {
@@ -226,7 +226,7 @@ TEST(ThreeDGridTest, access)
 TEST(ThreeDGridTest, swap)
 {
   size_t n1 = 3, m1 = 2, w1 = 4;
-  Grid3D<double> grid1(n1, m1, w1);
+  Grid3D<Real> grid1(n1, m1, w1);
   for (size_t i = 0; i < n1; ++i) {
     for (size_t j = 0; j < m1; ++j) {
       for (size_t k = 0; k < w1; ++k) {
@@ -236,7 +236,7 @@ TEST(ThreeDGridTest, swap)
   }
 
   size_t n2 = 5, m2 = 3, w2 = 5;
-  Grid3D<double> grid2(n2, m2, w2);
+  Grid3D<Real> grid2(n2, m2, w2);
   for (size_t i = 0; i < n2; ++i) {
     for (size_t j = 0; j < m2; ++j) {
       for (size_t k = 0; k < w2; ++k) {

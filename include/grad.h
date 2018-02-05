@@ -117,7 +117,7 @@ namespace ls
     //from the paper "Adaptively Sampled Distance Fields : A General Representation of Shape for Computer Graphics"
     MV compute_precise(const MV& point) const
     {
-      geometry_utils::Box3D bb = _AS::m_grid.getBoundingBox();
+      geometry_utils::Box3 bb = _AS::m_grid.getBoundingBox();
       //assert(bb.inside(point));
 
       // work with Cartesian with origin in left bottom point of the domain

@@ -81,7 +81,7 @@ public:
           top[i] = center[i] + spacing[i] * (_AS::m_grid.size(i) - 1) / 2.0;
         }
 
-        geometry_utils::Box3D newDomain(bottom, top);
+        geometry_utils::Box3 newDomain(bottom, top);
         _AS::m_grid.setBoundingBox(newDomain);
 
         for (size_t iz = 0; iz < _AS::m_grid.size(2); ++iz)
@@ -101,7 +101,12 @@ public:
     }
   };
 #endif
-  typedef GridDeserializerVTK<ls::Grid3D<double> > BasicDeserializerVTK;
+#ifdef SINGLE_PRECISION
+	typedef GridDeserializerVTK<ls::Grid3D<float> > BasicDeserializerVTK;
+#else
+	typedef GridDeserializerVTK<ls::Grid3D<double> > BasicDeserializerVTK;
+#endif
+
 }
 }
 

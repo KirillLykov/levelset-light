@@ -123,7 +123,7 @@ namespace ls
     typedef typename allocator::reference _reference;
     typedef typename allocator::const_reference _const_reference;
     _size_type m_n1, m_n2;
-    geometry_utils::Box2D m_bbox;
+    geometry_utils::Box2 m_bbox;
   public:
 
     typedef Grid2D<T, allocator> _TGrid;
@@ -133,7 +133,7 @@ namespace ls
     {
     }
 
-    Grid2D(_size_type n1, _size_type n2, geometry_utils::Box2D box = geometry_utils::Box2D())
+    Grid2D(_size_type n1, _size_type n2, geometry_utils::Box2 box = geometry_utils::Box2())
       : _TGridImpl(n1 * n2), m_n1(n1), m_n2(n2), m_bbox(box)
     {
     }
@@ -207,12 +207,12 @@ namespace ls
       _TGridImpl::resize(n1 * n2);
     }
 
-    geometry_utils::Box2D getBoundingBox() const
+    geometry_utils::Box2 getBoundingBox() const
     {
       return m_bbox;
     }
 
-    void setBoundingBox(const geometry_utils::Box2D& box)
+    void setBoundingBox(const geometry_utils::Box2& box)
     {
       m_bbox = box;
     }
@@ -226,7 +226,7 @@ namespace ls
     typedef typename allocator::reference _reference;
     typedef typename allocator::const_reference _const_reference;
     _size_type m_n1, m_n2, m_n3;
-    geometry_utils::Box3D m_bbox;
+    geometry_utils::Box3 m_bbox;
   public:
 
     typedef Grid3D<T, allocator> _TGrid;
@@ -238,7 +238,7 @@ namespace ls
 
     }
 
-    Grid3D(_size_type n1, _size_type n2, _size_type n3, geometry_utils::Box3D box = geometry_utils::Box3D())
+    Grid3D(_size_type n1, _size_type n2, _size_type n3, geometry_utils::Box3 box = geometry_utils::Box3())
       : _TGridImpl(n1 * n2 * n3), m_n1(n1), m_n2(n2), m_n3(n3), m_bbox(box)
     {
     }
@@ -315,12 +315,12 @@ namespace ls
       _TGridImpl::resize(n1 * n2 * n3);
     }
 
-    geometry_utils::Box3D getBoundingBox() const
+    geometry_utils::Box3 getBoundingBox() const
     {
       return m_bbox;
     }
 
-    void setBoundingBox(const geometry_utils::Box3D& box)
+    void setBoundingBox(const geometry_utils::Box3& box)
     {
       m_bbox = box;
     }

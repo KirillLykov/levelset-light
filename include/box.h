@@ -124,18 +124,18 @@ namespace geometry_utils
     bool inside(const MathVector<T, Dim>& point) const
     {
       if (Dim == 3) {
-        if (point.getX() >= low.getX() - Tolerance::globalTolerance
-         && point.getX() <= top.getX() + Tolerance::globalTolerance
-         && point.getY() >= low.getY() - Tolerance::globalTolerance
-         && point.getY() <= top.getY() + Tolerance::globalTolerance
-         && point.getZ() >= low.getZ() - Tolerance::globalTolerance
-         && point.getZ() <= top.getZ() + Tolerance::globalTolerance)
+        if (point.getX() >= low.getX() - Tolerance<T>::globalTolerance
+         && point.getX() <= top.getX() + Tolerance<T>::globalTolerance
+         && point.getY() >= low.getY() - Tolerance<T>::globalTolerance
+         && point.getY() <= top.getY() + Tolerance<T>::globalTolerance
+         && point.getZ() >= low.getZ() - Tolerance<T>::globalTolerance
+         && point.getZ() <= top.getZ() + Tolerance<T>::globalTolerance)
           return true;
       } else {
-        if (point.getX() >= low.getX() - Tolerance::globalTolerance
-         && point.getX() <= top.getX() + Tolerance::globalTolerance
-         && point.getY() >= low.getY() - Tolerance::globalTolerance
-         && point.getY() <= top.getY() + Tolerance::globalTolerance)
+        if (point.getX() >= low.getX() - Tolerance<T>::globalTolerance
+         && point.getX() <= top.getX() + Tolerance<T>::globalTolerance
+         && point.getY() >= low.getY() - Tolerance<T>::globalTolerance
+         && point.getY() <= top.getY() + Tolerance<T>::globalTolerance)
           return true;
       }
       return false;
@@ -169,7 +169,7 @@ namespace geometry_utils
      */
     bool isTrivial() const
     {
-      return Tolerance::close(getVolume(), 0.0);
+      return Tolerance<T>::close(getVolume(), 0.0);
     }
 
     //unsafe functions because a user can try to modify internal data
@@ -191,7 +191,7 @@ namespace geometry_utils
       diff = this->top - anotherBox.top;
       T difftop = diff.getLength();
 
-      if (difflow < Tolerance::globalTolerance && difftop < Tolerance::globalTolerance)
+      if (difflow < Tolerance<T>::globalTolerance && difftop < Tolerance<T>::globalTolerance)
         return true;
       return false;
     }
@@ -239,8 +239,13 @@ namespace geometry_utils
     }
   };
 
-  typedef Box<double, 2> Box2D;
-  typedef Box<double, 3> Box3D;
+#ifdef SINGLE_PRECISION
+  typedef Box<float, 2> Box2;
+  typedef Box<float, 3> Box3;
+#else
+  typedef Box<double, 2> Box2;
+  typedef Box<double, 3> Box3;
+#endif
 }
 }
 

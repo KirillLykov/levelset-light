@@ -79,7 +79,7 @@ public:
   {
     MathVector<T, 3> grad = computeGrad(pos);
     for (size_t i = 0; i < 5; ++i) {
-      T stepsize = std::max(m_tolerance, fabs(currsdf));
+      T stepsize = std::max(m_tolerance, T(fabs(currsdf)));
       pos -= grad*stepsize;
       currsdf = computeSDF(pos);
       if (currsdf < T(-2.0)*m_tolerance)
@@ -91,7 +91,7 @@ public:
   // it is close to the interface so use gradient computed earlier for the intersection point xstar
   void shiftInside(T currsdf, const MathVector<T, 3>& grad, MathVector<T, 3>& pos) const
   {
-    T stepsize = T(8.0)*std::max(m_tolerance, fabs(currsdf));
+    T stepsize = T(8.0)*std::max(m_tolerance, T(fabs(currsdf)));
     pos -= grad*stepsize;
   }
 
@@ -111,7 +111,7 @@ public:
       if (computeSDF(posOld) > 0.0) {
         rescueParticle(currsdf, posOld);
         pos = posOld;
-        vel *= -1.0;
+        vel *= T(-1.0);
         return;
       }
 
@@ -129,7 +129,7 @@ public:
 
         assert(DphiDt > 0);
 
-        subdt = std::min(dt, std::max(T(0.0), subdt - xstarSdf / DphiDt * (1.0 + m_tolerance)));
+        subdt = std::min(dt, std::max(T(0.0), subdt - xstarSdf / DphiDt * Real(1.0 + m_tolerance)));
 
         MathVector<T, 3> xstarNew = posOld + subdt * vel;
         MathVector<T, 3> diffXstar = xstar - xstarNew;
@@ -145,7 +145,7 @@ public:
 
       pos = posOld + lambda * vel;
 
-      vel *= -1.0;
+      vel *= T(-1.0);
       dt -= subdt;
       currsdf = computeSDF(pos);
       ++nmultipleReflections;
@@ -174,8 +174,8 @@ public:
   void bounceBackEdge(T dt, MathVector<T, 3>& posleft, MathVector<T, 3>& velleft, MathVector<T, 3>& posright, MathVector<T, 3>& velright)
   {
     assert(computeSDF(posleft) < 0.0 && computeSDF(posright) < 0.0);
-    const MathVector<T, 3> posmiddle = 0.5*(posleft + posright);
-    MathVector<T, 3> velmiddle = 0.5*(velleft + velright);
+    const MathVector<T, 3> posmiddle = T(0.5)*(posleft + posright);
+    MathVector<T, 3> velmiddle = T(0.5)*(velleft + velright);
 
     if (cheapOutsideCheck(posmiddle)) {
       T dist = computeSDF(posmiddle);
@@ -184,17 +184,21 @@ public:
         bounceBack(dist, dt, bbpos, velmiddle);
         MathVector<T, 3> shift = bbpos - posmiddle;
         posleft += shift;
-        velleft *= -1.0;
+        velleft *= T(-1.0);
         posright += shift;
-        velright *= -1.0;
+        velright *= T(-1.0);
       }
     }
   }
 
 };
-typedef Collision<double, ls::BasicReadAccessStrategy>  CollisionBasic;
-typedef Collision<double, ls::PeriodicReadAS>  CollisionPeriodic;
-
+#ifdef SINGLE_PRECISION
+	typedef Collision<float, ls::BasicReadAccessStrategy>  CollisionBasic;
+	typedef Collision<float, ls::PeriodicReadAS>  CollisionPeriodic;
+#else
+	typedef Collision<double, ls::BasicReadAccessStrategy>  CollisionBasic;
+	typedef Collision<double, ls::PeriodicReadAS>  CollisionPeriodic;
+#endif
 }
 
 #endif /* INCLUDE_COLLISION_H_ */

@@ -20,7 +20,7 @@ namespace ls
     typedef AccessStrategy<T> _AS;
     typedef typename _AS::_Grid _Grid;
 
-    geometry_utils::Box3D m_bbox; // bounding box for grid
+    geometry_utils::Box3 m_bbox; // bounding box for grid
     T h[3];
 
   public:

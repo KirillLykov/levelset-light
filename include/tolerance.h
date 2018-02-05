@@ -80,10 +80,10 @@ namespace {
   };
 
 #ifdef SINGLE_PRECISION
-  const float Tolerance<float>::globalTolerance = 1e-6f;
+  const float Tolerance<float>::globalTolerance = 1e-5f;
   const Close_absolut<float> Tolerance<float>::close_at_tol(Tolerance::globalTolerance);
 #else
-  const double Tolerance<double>::globalTolerance = 1e-9;
+  const double Tolerance<double>::globalTolerance = 1e-10;
   const Close_absolut<double> Tolerance<double>::close_at_tol(Tolerance::globalTolerance);
 #endif
 

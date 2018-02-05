@@ -94,7 +94,7 @@ namespace ls
   protected:
     typedef ls::Grid3D<T> _Grid;
     const _Grid& m_grid;
-    geometry_utils::Box3D m_bbox;
+    geometry_utils::Box3 m_bbox;
 
     explicit PeriodicReadAS(const _Grid& grid)
     : m_grid(grid)

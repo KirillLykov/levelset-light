@@ -127,7 +127,11 @@ namespace geometry_utils
     }
   };
 
+#ifdef SINGLE_PRECISION
+  typedef MathVector<float, 2> MathVector2D;
+#else
   typedef MathVector<double, 2> MathVector2D;
+#endif
 
   template<class T>
   class MathVector<T, 3>
@@ -231,8 +235,11 @@ namespace geometry_utils
     }
   };
 
+#ifdef SINGLE_PRECISION
+  typedef MathVector<float, 3> MathVector3D;
+#else
   typedef MathVector<double, 3> MathVector3D;
-
+#endif
   // Operations on vectors
 
   template<class T, size_t Dim>

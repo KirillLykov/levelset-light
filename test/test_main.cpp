@@ -14,11 +14,12 @@
 
 #ifdef SINGLE_PRECISION
 typedef float Real;
-const Real abs_error = 1e-6;
 #else
 typedef double Real;
-const Real abs_error = 1e-12;
 #endif
+
+static const Real tol = ls::Tolerance<Real>::globalTolerance;
+
 typedef ls::geometry_utils::MathVector<Real, 2> MathVector2R;
 typedef ls::geometry_utils::MathVector<Real, 3> MathVector3R;
 typedef ls::geometry_utils::Box<Real, 2> Box2R;
@@ -82,7 +83,7 @@ namespace
 // otherwise "duplicate symbol" linker error happens
 
 #include "test_grid.cpp"
-/*
+
 #ifdef USE_HDF5
 #include "test_HDF5.cpp"
 #endif
@@ -94,9 +95,9 @@ namespace
 #ifdef USE_VDB
 #include "test_VDB.cpp"
 #endif
-*/
+
 #include "test_geometry_utils.cpp"
-/*
+
 #include "test_linear_interpolator.cpp"
 
 #include "test_implicit_functions.cpp"
@@ -106,7 +107,7 @@ namespace
 #include "test_grad.cpp"
 
 #include "test_collision.cpp"
-*/
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
