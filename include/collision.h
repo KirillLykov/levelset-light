@@ -58,8 +58,8 @@ public:
     ls::geometry_utils::MathVector<T, 3> relativePosition = _LI::getRelativePosition(point);;
 
     size_t index[3];
-    _LI::computeIndex(relativePosition, index);
-    assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
+	_LI::computeIndex(relativePosition, index);
+	assert(index[0] < m_grid->size(0) && index[1] < m_grid->size(1) && index[2] < m_grid->size(2));
     return  (*m_grid)(index[0], index[1], index[2]);
   }
 
@@ -81,7 +81,9 @@ public:
     for (size_t i = 0; i < 5; ++i) {
       T stepsize = std::max(m_tolerance, T(fabs(currsdf)));
       pos -= grad*stepsize;
-      currsdf = computeSDF(pos);
+	  if (!_LI::inside(pos))
+	  	break;
+	  currsdf = computeSDF(pos);
       if (currsdf < T(-2.0)*m_tolerance)
         break;
     }
@@ -110,7 +112,11 @@ public:
 
       if (computeSDF(posOld) > 0.0) {
         rescueParticle(currsdf, posOld);
-        pos = posOld;
+        if (!_LI::inside(posOld)) {
+			std::cout << "Failed to rescue particle, try increasing mesh resolution"  << std::endl;
+			return;
+		}
+		pos = posOld;
         vel *= T(-1.0);
         return;
       }

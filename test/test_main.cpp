@@ -81,7 +81,6 @@ namespace
 // to run all tests from one point
 // corresponding cpp files must be excluded from build
 // otherwise "duplicate symbol" linker error happens
-
 #include "test_grid.cpp"
 
 #ifdef USE_HDF5
@@ -105,7 +104,6 @@ namespace
 #include "test_grid_operations.cpp"
 
 #include "test_grad.cpp"
-
 #include "test_collision.cpp"
 
 int main(int argc, char** argv)

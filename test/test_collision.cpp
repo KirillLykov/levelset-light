@@ -196,11 +196,12 @@ TEST(CollisionTest, bback_multiplereflections)
 {
   using namespace ls;
 #ifdef SINGLE_PRECISION
-  const Real tolerance = 1e-4;
+  const Real tolerance = 1e-6;
+  size_t n = 128, m = 128, w = 128; // otherwise it fails
 #else
   const Real tolerance = 1e-6;
-#endif
   size_t n = 64, m = 64, w = 64;
+#endif
   IImplicitFunctionDPtr func( new TwoPlanceInY<Real>(1.0) );
   FillInGrid<Real> fill(func);
 
@@ -217,13 +218,13 @@ TEST(CollisionTest, bback_multiplereflections)
   collision.bounceBack(currsdf, dt, pos, vel);
 
   EXPECT_LT( (pos - MathVector3R(0.0, -0.5, 0.0)).getLength(), tolerance );
-
+  
   // many reflections
   pos = MathVector3R(0.0, 7.998, 0.0);
   currsdf = collision.computeSDF(pos);
   vel = MathVector3R(0.0, 8.0, 0.0);
   collision.bounceBack(currsdf, dt, pos, vel);
-
+  
   EXPECT_LT( (pos - MathVector3R(0.0, -0.002, 0.0)).getLength(),  tolerance );
 }
 

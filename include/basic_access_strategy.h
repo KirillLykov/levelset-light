@@ -62,6 +62,11 @@ namespace ls
       }
       return m_grid(i, j, k);
     }
+
+	bool inside(const geometry_utils::MathVector<T, 3>& point) const 
+	{
+		return m_grid.getBoundingBox().inside(point);
+	}
   };
 
   template<class T>
@@ -127,6 +132,11 @@ namespace ls
       // it can be greater, just remap assert (i < m_grid.size(0) && j < m_grid.size(1) && k < m_grid.size(2));
       return m_grid( mapIndex(i, 0), mapIndex(j, 1), mapIndex(k, 2) );
     }
+
+	bool inside(const geometry_utils::MathVector<T, 3>& point) const 
+	{
+	  return true;			    
+	}
   };
 
 }
