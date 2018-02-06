@@ -23,7 +23,7 @@ namespace io
 {
 
 #ifndef USE_HDF5
-template<class Grid, class AccessStrategy = BasicWriteAccessStrategy<T> >
+template<typename T, typename Grid = ls::Grid3D<T>, class AccessStrategy = BasicWriteAccessStrategy<T> >
 class GridDeserializerHDF5
 {
 public:

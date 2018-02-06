@@ -135,7 +135,7 @@ public:
 
         assert(DphiDt > 0);
 
-        subdt = std::min(dt, std::max(T(0.0), subdt - xstarSdf / DphiDt * Real(1.0 + m_tolerance)));
+        subdt = std::min(dt, std::max(T(0.0), subdt - xstarSdf / DphiDt * T(1.0 + m_tolerance)));
 
         MathVector<T, 3> xstarNew = posOld + subdt * vel;
         MathVector<T, 3> diffXstar = xstar - xstarNew;
