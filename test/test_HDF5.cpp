@@ -24,7 +24,12 @@ using namespace geometry_utils;
 TEST(HDF5Test, writeAndRead1)
 {
   size_t n = 8, m = 8, w = 16;
-  Grid3D<Real> grid(n, m, w, Box3R());
+ 
+  Real top[] = {1.0, 2.0, 3.0};
+  Real low[] = {-1.0, -2.0, -3.0};
+  Box3R box(low, top);
+ 
+  Grid3D<Real> grid(n, m, w, box);
   Real h = 1.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -41,14 +46,17 @@ TEST(HDF5Test, writeAndRead1)
   Grid3D<Real> readGrid; // at this point I don't know the size
   BasicDeserializerHDF5 reader(readGrid, "../test-aux/writeAndRead1", "data");
   reader.run();
-
-  EXPECT_EQ(grid, readGrid);
+  EXPECT_TRUE(grid == readGrid);
 }
 
 TEST(HDF5Test, writeAndRead2)
 {
   size_t n = 10, m = 12, w = 14;
-  Grid3D<Real> grid(n, m, w, Box3R());
+  Real top[] = {3.0, 2.0, 1.0};
+  Real low[] = {-1.0, -2.0, -3.0};
+  Box3R box(low, top);
+  
+  Grid3D<Real> grid(n, m, w, box);
   Real h = 10.0 / (n - 1);
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
@@ -72,12 +80,13 @@ TEST(HDF5Test, writeAndRead2)
 //TODO improve test - check xdmf metadata
 TEST(HDF5Test, writeAndRead3)
 {
-  size_t n = 12, m = 11, w = 14;
-  Grid3D<Real> grid(n, m, w, Box3R());
-
   Real top[] = {4.0, 5.0, 9.0};
   Real low[] = {-3.0, -4.0, -5.0};
   Box3R box(low, top);
+
+  size_t n = 12, m = 11, w = 14;
+  Grid3D<Real> grid(n, m, w, box);
+
   Real h[] = {box.getSizeX() / (n - 1.0), box.getSizeY() / (m - 1.0), box.getSizeZ() / (w - 1.0)};
 
   for (size_t i = 0; i < n; ++i) {

@@ -51,16 +51,16 @@ public:
 
     const std::string m_fileName;
     const std::string m_datasetName;
-
+    Grid& m_grid;
   public:
 
     GridDeserializerHDF5(Grid& grid, const std::string& fileName)
-    : _AS(grid), m_fileName(fileName + std::string(".h5")), m_datasetName("data")
+    : m_grid(grid), _AS(grid), m_fileName(fileName + std::string(".h5")), m_datasetName("data")
     {
     }
 
     GridDeserializerHDF5(Grid& grid, const std::string& fileName, const std::string& datasetName)
-    : _AS(grid), m_fileName(fileName + std::string(".h5")), m_datasetName(datasetName)
+    : m_grid(grid), _AS(grid), m_fileName(fileName + std::string(".h5")), m_datasetName(datasetName)
     {
     }
 
@@ -74,6 +74,16 @@ public:
 
         if (typeClass != H5T_FLOAT) //TODO change exception type
           throw std::logic_error("only T is supported by HDF5Deserializer");
+
+        // read boxSize Attribute
+        Attribute attr = dataset.openAttribute("boxSize");
+		DataType type(attr.getDataType());
+        T buf[6];
+		attr.read(type, buf);
+        for (int i = 0; i < 6; ++i)
+            std::cout << buf[i] << " ";
+        std::cout << std::endl;
+        m_grid.setBoundingBox( Box3(MathVector3D(buf[0], buf[1], buf[2]), MathVector3D(buf[3], buf[4], buf[5])) );        
 
         //validateRank();
         DataSpace dataspace = dataset.getSpace();
@@ -149,6 +159,9 @@ public:
     {
       if (dims.size() == 4 && dims[3] != 1)
         throw std::logic_error("datasets with 4th dimension not equal to 1 are not supported");
+
+      std::cout << "********************\n";
+      std::cout << dims[0] << " " << dims[1] << " " << dims[2] << std::endl;
 
       _AS::m_grid.resize(dims[0], dims[1], dims[2]);
       for (size_t iz = 0; iz < _AS::m_grid.size(2); ++iz)

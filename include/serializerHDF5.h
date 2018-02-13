@@ -82,6 +82,16 @@ public:
 		auto PT = PredType::NATIVE_DOUBLE;
 #endif
 		DataSet dataset(file.createDataSet(m_datasetName, PT, fspace, plist));
+        
+        // Box's attributes
+        hsize_t six = 6;
+        ArrayType dataType(PT, 1, &six);
+        H5::DataSpace dataSpace = H5::DataSpace();
+        Attribute attrBoxSize(dataset.createAttribute("boxSize", dataType, dataSpace)); 
+        T data[] = {m_bbox.getLow().getX(), m_bbox.getLow().getY(), m_bbox.getLow().getZ(),
+            m_bbox.getTop().getX(), m_bbox.getTop().getY(), m_bbox.getTop().getZ()};
+        attrBoxSize.write(dataType, data); 
+
         hsize_t offset[m_rank]; // hyperslab offset in the file
         memset(offset, 0, m_rank * sizeof(hsize_t));
         fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
@@ -141,12 +151,6 @@ public:
           }
     }
 
-#ifdef USE_XDMF
-    void writeMetadata(const hsize_t* dims) const
-    {
-      //TODO implement
-    }
-#else
     void writeMetadata(const hsize_t* dims) const
     {
       std::stringstream ss;
@@ -187,7 +191,6 @@ public:
       metadataFile << ss.str();
       metadataFile.close();
     }
-#endif
 
     static std::string extractFilename(const std::string& fullFileName)
     {

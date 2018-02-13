@@ -172,7 +172,6 @@ namespace geometry_utils
       return Tolerance<T>::close(getVolume(), 0.0);
     }
 
-    //unsafe functions because a user can try to modify internal data
     MathVector<T, Dim> getLow() const
     {
       return low;
