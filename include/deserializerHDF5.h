@@ -49,9 +49,10 @@ public:
     typedef AccessStrategy _AS;
     typedef std::vector<hsize_t> _szArray;
 
+    Grid& m_grid;
     const std::string m_fileName;
     const std::string m_datasetName;
-    Grid& m_grid;
+
   public:
 
     GridDeserializerHDF5(Grid& grid, const std::string& fileName)
@@ -80,6 +81,8 @@ public:
 		DataType type(attr.getDataType());
         T buf[6];
 		attr.read(type, buf);
+        using geometry_utils::Box3;
+        using geometry_utils::MathVector3D;
         m_grid.setBoundingBox( Box3(MathVector3D(buf[0], buf[1], buf[2]), MathVector3D(buf[3], buf[4], buf[5])) );        
 
         //validateRank();

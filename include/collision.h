@@ -106,11 +106,11 @@ public:
     size_t nmultipleReflections = 0; // to tackle multiple reflections
     do
     {
-      assert(currsdf >= 0.0);
+      assert(currsdf >= T(0.0));
 
       posOld = pos - dt * vel;
 
-      if (computeSDF(posOld) > 0.0) {
+      if (computeSDF(posOld) > T(0.0)) {
         rescueParticle(currsdf, posOld);
         if (!_LI::inside(posOld)) {
 			std::cout << "Failed to rescue particle, try increasing mesh resolution"  << std::endl;
@@ -155,20 +155,20 @@ public:
       dt -= subdt;
       currsdf = computeSDF(pos);
       ++nmultipleReflections;
-    } while (currsdf >= 0.0 && nmultipleReflections < 5);
-
-    if (currsdf > -m_tolerance && currsdf < 0.0)
+    } while (currsdf >= T(0.0) && nmultipleReflections < 5);
+    
+	if (currsdf > -m_tolerance && currsdf < T(0.0))
     {
       shiftInside(currsdf, grad, pos);
-      assert(computeSDF(pos) < 0);
+      assert(computeSDF(pos) < T(0));
     }
 
     // could not resolve
-    if (currsdf > 0)
+    if (currsdf > T(0))
     {
       std::cout << "Could not bb, nm" << nmultipleReflections << "\n";
       pos = posOld;
-      assert(computeSDF(pos) < 0);
+      assert(computeSDF(pos) < T(0));
     }
 
     return;

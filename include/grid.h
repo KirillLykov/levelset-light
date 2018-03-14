@@ -324,6 +324,10 @@ namespace ls
     {
       m_bbox = box;
     }
+
+	void* c_ptr() const {
+		return (void*)_TGridImpl::m_data;
+	}
   };
 }
 
