@@ -19,5 +19,6 @@ This approach was used, in particular, for this simulaiton (click image to see t
 
 [![](http://lammps.sandia.gov/images/blood_small.png)](http://lammps.sandia.gov/movies/blood.mp4 "RBC simulation")
 
+Check out dev branch for Single Precision support (implemented only for HDF5 yet)
 
 
